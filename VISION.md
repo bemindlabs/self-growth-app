@@ -15,7 +15,7 @@ Self Growth unifies every dimension of personal development into a single, offli
 1. **Privacy by default** — All data lives in a local SQLite database. Embeddings run on-device via fastembed. No account required, no telemetry, no cloud sync unless explicitly opted in.
 2. **Holistic growth** — Skills, habits, goals, health, finances, learning, journaling, and routines belong together. Cross-domain insights (e.g., correlating sleep with productivity) are only possible when the data coexists.
 3. **AI as coach, not crutch** — The AI layer surfaces patterns, asks questions, and suggests next steps. It does not decide for the user. Semantic search (RAG) lets users query their own history in natural language.
-4. **Local-first, open ecosystem** — Built on Tauri v2 and OpenClaw. Runs natively on macOS, Windows, and Linux. Integrates with the OpenClaw gateway for optional AI capabilities while keeping the core experience fully offline.
+4. **Local-first, open ecosystem** — Built on Tauri v2 and the BWOC agent framework. Runs natively on macOS, Windows, and Linux. Integrates with a BWOC agent for optional AI capabilities while keeping the core experience fully offline.
 5. **Progressive complexity** — A first-time user sees a simple dashboard and guided onboarding. Power users unlock routines, financial ledgers, health checkups, and deep semantic search as they grow into the tool.
 
 ## Product Pillars
@@ -43,7 +43,7 @@ Self Growth unifies every dimension of personal development into a single, offli
 - **Ledger** — Income/expense tracking, receipt OCR scanning, and basic financial summaries to connect financial habits with personal goals.
 
 ### AI Coaching
-- **Chat** — Conversational AI coach powered by OpenClaw gateway that has context from all your personal data (with your permission) to provide personalized guidance.
+- **Chat** — Conversational AI coach powered by a BWOC agent that has context from all your personal data (with your permission) to provide personalized guidance.
 
 ## North Star Metrics
 

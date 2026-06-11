@@ -7,7 +7,7 @@ Self-development tracking desktop app with AI-powered coaching, insights, and se
 - **Frontend**: React 19, Tailwind CSS 4, React Router 7
 - **Backend**: Rust (Tauri v2), SQLite (rusqlite)
 - **Embeddings**: fastembed (AllMiniLM-L6-v2, local on desktop)
-- **LLM**: Any `/v1/chat/completions` compatible endpoint (e.g. OpenClaw Gateway)
+- **AI**: BWOC agent fleet — A2A over HTTP (local or hosted) or the local `bwoc` CLI
 
 ## Features
 
@@ -24,7 +24,7 @@ Self-development tracking desktop app with AI-powered coaching, insights, and se
 | AI Chat | Multi-turn conversational coaching |
 | Stories | AI-generated inspirational stories from your context |
 | Smart Search | Semantic search across all your data using vector embeddings |
-| Settings | LLM endpoint config, connection test, reset |
+| Settings | BWOC agent config, connection test, reset |
 
 ## Architecture
 
@@ -46,7 +46,8 @@ Self Growth (Tauri Desktop App)
 │   │   │   ├── learning.rs # Learning items CRUD
 │   │   │   ├── goals.rs    # Goals CRUD
 │   │   │   └── progress.rs # Progress entries + dashboard stats
-│   │   ├── gateway.rs      # LLM client (chat completions, context formatting)
+│   │   ├── bwoc.rs         # BWOC agent transport (A2A / CLI) + context formatting
+│   │   ├── store.rs        # Settings + query helpers (shared)
 │   │   ├── db.rs           # SQLite init + migrations
 │   │   ├── embedder.rs     # Local vector embeddings (fastembed)
 │   │   ├── search.rs       # Cosine similarity
@@ -63,7 +64,7 @@ Self Growth (Tauri Desktop App)
 - [Rust](https://rustup.rs/)
 - [Node.js](https://nodejs.org/) (v18+)
 - [pnpm](https://pnpm.io/)
-- An LLM endpoint (e.g. [OpenClaw](https://github.com/nicepkg/openclaw))
+- A BWOC agent reachable via A2A, or the [`bwoc` CLI](https://github.com/bemindlabs/BWOC-Framework) installed (desktop)
 
 ### Install
 
@@ -83,15 +84,15 @@ pnpm tauri dev
 pnpm tauri build
 ```
 
-### Configure LLM
+### Configure the BWOC agent
 
-In the app, go to **Settings** and configure:
+In the app, go to **Settings → BWOC Agent** and configure:
 
 | Setting | Example |
 |---------|---------|
-| Endpoint | `http://127.0.0.1:18789/v1` |
-| Gateway Token | Your OpenClaw gateway token |
-| Model | `openclaw/default` |
+| Transport | `A2A over HTTP` |
+| Agent URL | `http://127.0.0.1:9999` (local `bwoc serve`) or a hosted endpoint |
+| Agent ID | `agent-growth-coach` |
 
 Click **Test Connection** to verify.
 
@@ -120,6 +121,6 @@ SQLite with WAL mode, stored at:
 ## RAG / Semantic Search
 
 - **Desktop**: Local embeddings via `fastembed` (AllMiniLM-L6-v2)
-- **Mobile**: Remote embeddings via LLM endpoint `/v1/embeddings`
+- **Mobile**: Semantic ranking via the BWOC agent (no on-device embeddings)
 
 Use **Rebuild Index** in the Search page to generate embeddings for all skills, learning items, and routines.

@@ -60,7 +60,8 @@ app/
       embedder.rs             # EmbedderState for fastembed (desktop only)
       models.rs               # Shared Rust structs with serde
       search.rs               # Semantic search / RAG logic
-      gateway.rs              # OpenClaw AI gateway HTTP client
+      bwoc.rs                 # BWOC agent transport (A2A / CLI) for AI features
+      store.rs                # Settings + query helpers shared across commands
     Cargo.toml
     tauri.conf.json
 ```
@@ -80,6 +81,15 @@ SQLite database (`self-growth.db`) initialized at app startup (`db::init_db`) an
 ### Embeddings / RAG
 
 `fastembed` runs locally (desktop builds only, excluded on iOS/Android via `cfg` flag). The `EmbedderState` is initialized at startup and used by `commands::rag` for semantic search across journeys, goals, and notes.
+
+### AI features (BWOC)
+
+AI features (coach, insights, summaries, chat, stories, OCR) address an agent in the **BWOC** fleet rather than a standalone LLM endpoint — the agent owns its own LLM backend. `bwoc.rs` implements a pluggable transport selectable in Settings:
+
+- **A2A over HTTP** (default) — JSON-RPC `message/send` to an agent's A2A endpoint, local (`bwoc serve`) or a hosted endpoint on your fleet.
+- **Local bwoc CLI** (desktop only) — shells out to `bwoc run`; compiled out (`#[cfg(desktop)]`) on mobile.
+
+The default agent is `agent-growth-coach`. No LLM endpoint/token/model is stored by the app — only which agent to address (`bwoc_transport`, `bwoc_agent_id`, `bwoc_agent_url`).
 
 ## Versioning
 
