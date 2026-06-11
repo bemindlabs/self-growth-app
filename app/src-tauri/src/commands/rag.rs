@@ -5,6 +5,9 @@ use tauri::State;
 #[cfg(not(any(target_os = "ios", target_os = "android")))]
 use crate::embedder::EmbedderState;
 
+#[cfg(any(target_os = "ios", target_os = "android"))]
+use crate::bwoc;
+
 // ---------------------------------------------------------------------------
 // Desktop: local embeddings via fastembed
 // ---------------------------------------------------------------------------
@@ -71,7 +74,7 @@ pub async fn semantic_search(
     limit: Option<usize>,
 ) -> Result<Vec<SearchResult>, String> {
     let limit = limit.unwrap_or(10);
-    let (endpoint, token) = gateway::llm_config(&db_state)?;
+    let cfg = bwoc::bwoc_config(&db_state)?;
 
     // Collect all searchable items from DB
     let items = {
@@ -101,7 +104,7 @@ pub async fn semantic_search(
     ];
 
     let (response, _) =
-        gateway::chat_completion(&endpoint, &token, gateway::LLM_MODEL, &messages, 0.0, 100)
+        bwoc::send_message(&cfg, &messages, 0.0, 100)
             .await?;
 
     // Parse the LLM response — extract numbers

@@ -38,7 +38,7 @@ Self Growth is more than a tracker. It's a **personal growth operating system** 
 ### Our Commitment
 
 - **Privacy first** — Local-first architecture. Your growth journey is yours alone
-- **Open integration** — Apple Health, Google Fit, and OpenClaw gateway — connect your existing tools
+- **Open integration** — Apple Health, Google Fit, and the BWOC agent fleet — connect your existing tools
 - **Holistic view** — Mind and body together, because you can't separate physical health from personal development
 - **Actionable AI** — Every AI insight references your real data and suggests concrete next steps
 `,
@@ -74,17 +74,18 @@ Self Growth is a self-development tracking desktop app that helps you build bett
 
 Download and install Self Growth for your platform. The app runs as a native desktop application.
 
-### Step 2: Connect to OpenClaw Gateway
+### Step 2: Connect a BWOC Agent
 
-Self Growth uses an OpenClaw gateway for AI features (coaching, insights, chat, stories).
+Self Growth uses an agent in your **BWOC fleet** for AI features (coaching, insights, chat, stories, OCR). The agent owns its own LLM backend — the app only needs to know how to reach it.
 
-1. Make sure your OpenClaw gateway is running
-2. Go to **Settings** in the app
-3. Enter your **Endpoint** (e.g. \`http://127.0.0.1:18789/v1\`)
-4. Enter your **Gateway Token**
-5. Click **Test Connection** to verify
+1. Go to **Settings** in the app
+2. Choose a **Transport**:
+   - **A2A over HTTP** — point the **Agent URL** at the agent's A2A endpoint. This can be a local \`bwoc serve\` or a hosted endpoint on your fleet, so you can reach a gateway-hosted agent without running your own server.
+   - **Local bwoc CLI** — runs \`bwoc\` on this machine against your workspace.
+3. Set the **Agent ID** (default \`agent-growth-coach\`)
+4. Click **Test Connection** to verify
 
-> If you don't have an OpenClaw gateway, the app still works for tracking skills, routines, habits, goals, and journal — just without AI features.
+> If you don't connect a BWOC agent, the app still works for tracking skills, routines, habits, goals, and journal — just without AI features.
 
 ### Step 3: Start Tracking
 
@@ -117,7 +118,7 @@ Self Growth integrates with Apple Health and Google Fit to bring your health met
 
 ### Step 5: Use AI Features
 
-Once connected to OpenClaw:
+Once your BWOC agent is connected:
 - Ask the **AI Coach** questions on your Dashboard — it now includes your health data
 - Generate **Insights** to see patterns across habits, goals, and health
 - Get a **Weekly Summary** of your progress
@@ -171,7 +172,7 @@ Generate inspirational stories based on your tracked data. Choose a tone (encour
 Search across all your skills, learning items, routines, todos, ledger entries, and daily health summaries using AI-powered semantic search. Click "Rebuild Index" to update the search index after adding new data.
 
 ### Settings
-Configure your LLM connection, Google Fit credentials, test connections, or reset all settings to defaults.
+Configure your BWOC agent connection, Google Fit credentials, test connections, or reset all settings to defaults.
 `,
   },
   {
@@ -179,16 +180,16 @@ Configure your LLM connection, Google Fit credentials, test connections, or rese
     title: "FAQ",
     content: `
 **Where is my data stored?**
-All data is stored locally on your device in a SQLite database. Nothing is sent to the cloud unless you use AI features, which communicate with your configured OpenClaw gateway.
+All data is stored locally on your device in a SQLite database. Nothing is sent to the cloud unless you use AI features, which communicate with your configured BWOC agent.
 
 **Do I need an internet connection?**
 No, except for AI features (coaching, chat, insights, stories) and Google Fit sync. All tracking features and Apple Health import work offline.
 
-**Can I use this without OpenClaw?**
+**Can I use this without a BWOC agent?**
 Yes. Skills, routines, habits, goals, health tracking, ledger, todos, journal, and learning tracking all work without any AI connection.
 
-**What is OpenClaw?**
-OpenClaw is a self-hosted AI gateway that routes requests to LLM providers. Self Growth connects to it for AI features.
+**What is BWOC?**
+BWOC is a backend-neutral framework for orchestrating AI agents. Self Growth addresses an agent in your BWOC fleet for its AI features; the agent runs whatever LLM backend you configure for it.
 
 **How does health integration work?**
 Self Growth supports two health data sources:
@@ -218,7 +219,7 @@ The Ledger defaults to THB but supports any currency code per entry. Summary cal
 Yes. When creating a todo, you can optionally link it to an existing goal. This helps you break goals into actionable tasks.
 
 **Is the AI reading all my data?**
-When you use AI features, the app sends relevant context (recent skills, routines, goals, learning items, and 7-day health averages) to your configured OpenClaw gateway. Financial (Ledger) and task (Todos) data is **not** sent to AI coaching — it is only searchable via Smart Search locally. AI data never leaves your network if you self-host OpenClaw.
+When you use AI features, the app sends relevant context (recent skills, routines, goals, learning items, and 7-day health averages) to your configured BWOC agent. Financial (Ledger) and task (Todos) data is **not** sent to AI coaching — it is only searchable via Smart Search locally. AI data stays within your network when the agent runs on your own machine or fleet.
 `,
   },
   {
@@ -231,18 +232,18 @@ When you use AI features, the app sends relevant context (recent skills, routine
 By using Self Growth, you agree to these terms. If you do not agree, do not use the app.
 
 ### 2. Description of Service
-Self Growth is a self-development tracking application that stores data locally on your device. AI features require a separately configured OpenClaw gateway.
+Self Growth is a self-development tracking application that stores data locally on your device. AI features require a separately configured BWOC agent.
 
 ### 3. User Responsibilities
 - You are responsible for maintaining the security of your device and data
-- You are responsible for configuring and maintaining your own OpenClaw gateway
+- You are responsible for configuring and maintaining your own BWOC agent and fleet
 - You are responsible for backing up your data
 
 ### 4. Data Ownership
 All data you create in Self Growth belongs to you. The app stores data locally on your device. We do not collect, store, or have access to your data.
 
 ### 5. AI Features
-AI features are powered by your self-hosted OpenClaw gateway. The quality, accuracy, and availability of AI responses depend on your gateway configuration and the underlying LLM provider.
+AI features are powered by your BWOC agent. The quality, accuracy, and availability of AI responses depend on your agent configuration and the underlying LLM backend it uses.
 
 ### 6. Disclaimer
 Self Growth is provided "as is" without warranties of any kind. The AI coaching features are for informational purposes only and do not constitute professional advice.
@@ -271,7 +272,7 @@ All your data is stored **locally on your device** in a SQLite database. We do n
 - No cookies or tracking
 
 ### AI Feature Data Flow
-When you use AI features (Coach, Chat, Insights, Stories), the app sends relevant context data to your **self-configured OpenClaw gateway**. This includes:
+When you use AI features (Coach, Chat, Insights, Stories), the app sends relevant context data to your **configured BWOC agent**. This includes:
 - Recent skills and levels
 - Active routines and completion data
 - Learning items
@@ -281,14 +282,14 @@ When you use AI features (Coach, Chat, Insights, Stories), the app sends relevan
 
 Ledger entries and todos are indexed for Smart Search but are **not** included in AI coaching context.
 
-This data is sent to the endpoint you configure in Settings. If you self-host OpenClaw, this data never leaves your local network.
+This data is sent to the agent you configure in Settings. When that agent runs on your own machine or fleet, this data never leaves your network.
 
 ### Health Data
 Health data imported from Apple Health or synced from Google Fit is stored **locally on your device**. When using Google Fit sync, the app communicates with Google's Fitness API using your own OAuth credentials — no data passes through our servers.
 
 ### Third-Party Services
 Self Growth does not integrate with any third-party analytics, advertising, or tracking services. External communication is limited to:
-- Your self-configured **OpenClaw gateway** (for AI features)
+- Your configured **BWOC agent** (for AI features)
 - **Google Fitness API** (only if you connect Google Fit, using your own credentials)
 
 ### Data Retention

@@ -3,9 +3,10 @@ use crate::commands::constants::{
     MAX_TOKENS_COACH, MAX_TOKENS_INSIGHTS, MAX_TOKENS_SUMMARIZE, SUMMARIZE_SYSTEM, TEMP_CHAT,
     TEMP_COACH, TEMP_INSIGHTS, TEMP_SUMMARIZE,
 };
+use crate::bwoc;
 use crate::db::DbState;
-use crate::gateway;
 use crate::models::{AiResponse, ChatMessageInput};
+use crate::store;
 use tauri::State;
 
 #[tauri::command]
@@ -13,9 +14,9 @@ pub async fn ai_coach(
     state: State<'_, DbState>,
     question: Option<String>,
 ) -> Result<AiResponse, String> {
-    let (endpoint, token) = gateway::llm_config(&state)?;
+    let cfg = bwoc::bwoc_config(&state)?;
     let context = build_context(&state)?;
-    let context_block = gateway::format_context(&context);
+    let context_block = bwoc::format_context(&context);
 
     let q = question
         .filter(|s| !s.trim().is_empty())
@@ -30,15 +31,8 @@ pub async fn ai_coach(
         serde_json::json!({"role": "user", "content": user_prompt}),
     ];
 
-    let (content, returned_model) = gateway::chat_completion(
-        &endpoint,
-        &token,
-        gateway::LLM_MODEL,
-        &messages,
-        TEMP_COACH,
-        MAX_TOKENS_COACH,
-    )
-    .await?;
+    let (content, returned_model) =
+        bwoc::send_message(&cfg, &messages, TEMP_COACH, MAX_TOKENS_COACH).await?;
     Ok(AiResponse {
         content,
         model: returned_model,
@@ -47,9 +41,9 @@ pub async fn ai_coach(
 
 #[tauri::command]
 pub async fn ai_insights(state: State<'_, DbState>) -> Result<AiResponse, String> {
-    let (endpoint, token) = gateway::llm_config(&state)?;
+    let cfg = bwoc::bwoc_config(&state)?;
     let context = build_context(&state)?;
-    let context_block = gateway::format_context(&context);
+    let context_block = bwoc::format_context(&context);
 
     let user_prompt =
         format!("Analyze my self-development data and provide insights:\n\n{context_block}");
@@ -59,15 +53,8 @@ pub async fn ai_insights(state: State<'_, DbState>) -> Result<AiResponse, String
         serde_json::json!({"role": "user", "content": user_prompt}),
     ];
 
-    let (content, returned_model) = gateway::chat_completion(
-        &endpoint,
-        &token,
-        gateway::LLM_MODEL,
-        &messages,
-        TEMP_INSIGHTS,
-        MAX_TOKENS_INSIGHTS,
-    )
-    .await?;
+    let (content, returned_model) =
+        bwoc::send_message(&cfg, &messages, TEMP_INSIGHTS, MAX_TOKENS_INSIGHTS).await?;
     Ok(AiResponse {
         content,
         model: returned_model,
@@ -79,9 +66,9 @@ pub async fn ai_summarize(
     state: State<'_, DbState>,
     period: Option<String>,
 ) -> Result<AiResponse, String> {
-    let (endpoint, token) = gateway::llm_config(&state)?;
+    let cfg = bwoc::bwoc_config(&state)?;
     let context = build_context(&state)?;
-    let context_block = gateway::format_context(&context);
+    let context_block = bwoc::format_context(&context);
 
     let period = period.unwrap_or_else(|| "weekly".to_string());
     let user_prompt = format!(
@@ -93,15 +80,8 @@ pub async fn ai_summarize(
         serde_json::json!({"role": "user", "content": user_prompt}),
     ];
 
-    let (content, returned_model) = gateway::chat_completion(
-        &endpoint,
-        &token,
-        gateway::LLM_MODEL,
-        &messages,
-        TEMP_SUMMARIZE,
-        MAX_TOKENS_SUMMARIZE,
-    )
-    .await?;
+    let (content, returned_model) =
+        bwoc::send_message(&cfg, &messages, TEMP_SUMMARIZE, MAX_TOKENS_SUMMARIZE).await?;
     Ok(AiResponse {
         content,
         model: returned_model,
@@ -113,9 +93,9 @@ pub async fn ai_chat(
     state: State<'_, DbState>,
     messages: Vec<ChatMessageInput>,
 ) -> Result<AiResponse, String> {
-    let (endpoint, token) = gateway::llm_config(&state)?;
+    let cfg = bwoc::bwoc_config(&state)?;
     let context = build_context(&state)?;
-    let context_block = gateway::format_context(&context);
+    let context_block = bwoc::format_context(&context);
 
     let system_content = if context_block == "No context available." {
         CHAT_SYSTEM.to_string()
@@ -128,15 +108,8 @@ pub async fn ai_chat(
         llm_messages.push(serde_json::json!({"role": msg.role, "content": msg.content}));
     }
 
-    let (content, returned_model) = gateway::chat_completion(
-        &endpoint,
-        &token,
-        gateway::LLM_MODEL,
-        &llm_messages,
-        TEMP_CHAT,
-        MAX_TOKENS_CHAT,
-    )
-    .await?;
+    let (content, returned_model) =
+        bwoc::send_message(&cfg, &llm_messages, TEMP_CHAT, MAX_TOKENS_CHAT).await?;
     Ok(AiResponse {
         content,
         model: returned_model,
@@ -146,7 +119,7 @@ pub async fn ai_chat(
 fn build_context(state: &State<DbState>) -> Result<serde_json::Value, String> {
     let conn = state.0.lock().map_err(|e| e.to_string())?;
 
-    let skills = gateway::query_strings(
+    let skills = store::query_strings(
         &conn,
         &format!("SELECT name, category, current_level, target_level FROM skills ORDER BY updated_at DESC LIMIT {LIMIT_CONTEXT_SKILLS}"),
         |row| {
@@ -160,7 +133,7 @@ fn build_context(state: &State<DbState>) -> Result<serde_json::Value, String> {
         },
     )?;
 
-    let routines = gateway::query_strings(
+    let routines = store::query_strings(
         &conn,
         "SELECT name, frequency, COALESCE(description, '') FROM routines WHERE is_active = 1 ORDER BY created_at DESC LIMIT 10",
         |row| {
@@ -173,7 +146,7 @@ fn build_context(state: &State<DbState>) -> Result<serde_json::Value, String> {
         },
     )?;
 
-    let goals = gateway::query_strings(
+    let goals = store::query_strings(
         &conn,
         "SELECT title, status, COALESCE(target_date, '') FROM goals ORDER BY created_at DESC LIMIT 10",
         |row| {
@@ -186,7 +159,7 @@ fn build_context(state: &State<DbState>) -> Result<serde_json::Value, String> {
         },
     )?;
 
-    let learning = gateway::query_strings(
+    let learning = store::query_strings(
         &conn,
         "SELECT title, item_type, status FROM learning_items ORDER BY created_at DESC LIMIT 10",
         |row| {
@@ -199,7 +172,7 @@ fn build_context(state: &State<DbState>) -> Result<serde_json::Value, String> {
         },
     )?;
 
-    let streaks = gateway::query_strings(
+    let streaks = store::query_strings(
         &conn,
         "SELECT r.name, COUNT(l.id) as completions FROM routines r LEFT JOIN routine_logs l ON r.id = l.routine_id WHERE l.completed_at >= datetime('now', '-7 days') GROUP BY r.id ORDER BY completions DESC LIMIT 5",
         |row| {
@@ -211,7 +184,7 @@ fn build_context(state: &State<DbState>) -> Result<serde_json::Value, String> {
         },
     )?;
 
-    let health = gateway::query_strings(
+    let health = store::query_strings(
         &conn,
         "SELECT metric_type, ROUND(AVG(value), 1), unit, COUNT(*) \
          FROM health_metrics \
@@ -229,7 +202,7 @@ fn build_context(state: &State<DbState>) -> Result<serde_json::Value, String> {
         },
     )?;
 
-    let todos = gateway::query_strings(
+    let todos = store::query_strings(
         &conn,
         "SELECT title, priority, COALESCE(due_date, 'no deadline'), status \
          FROM todos WHERE status NOT IN ('completed', 'cancelled') \
@@ -253,7 +226,7 @@ fn build_context(state: &State<DbState>) -> Result<serde_json::Value, String> {
         },
     )?;
 
-    let checkups = gateway::query_strings(
+    let checkups = store::query_strings(
         &conn,
         "SELECT title, checkup_date, category, results \
          FROM health_checkups \

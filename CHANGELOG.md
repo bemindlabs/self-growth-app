@@ -2,6 +2,35 @@
 
 All notable changes to Self Growth will be documented in this file.
 
+## [2026.6.11] - 2026-06-11
+
+### Changed
+
+- **Replaced the OpenClaw LLM gateway with the BWOC agent fleet.** AI features
+  (coach, insights, summaries, chat, stories, OCR) now address a BWOC agent
+  instead of an OpenAI-compatible LLM endpoint. The agent owns its own LLM
+  backend, so the app no longer stores an LLM endpoint/token/model.
+- AI connection is now a pluggable **BWOC transport**, selectable in Settings:
+  - **A2A over HTTP** (default) — JSON-RPC `message/send` to an agent's A2A
+    endpoint, local (`bwoc serve`) or a hosted endpoint on your fleet (reach a
+    gateway-hosted agent without running your own server).
+  - **Local bwoc CLI** (desktop only) — runs `bwoc run` against your workspace.
+  - **Gateway relay** — placeholder for the native WS signed-envelope transport.
+- Settings UI reworked: "LLM Connection" → "BWOC Agent" (transport, agent id,
+  agent URL, workspace). Get Started / FAQ / privacy / terms copy updated to BWOC.
+- On mobile (iOS/Android) only the A2A transport is offered; the CLI transport is
+  compiled out and hidden in the UI.
+
+### Added
+
+- BWOC coach agent `agent-growth-coach` (Ollama `gemma3:27b` backend, vision-capable for OCR).
+- Migration `009_bwoc_migration`: drops legacy `llm_endpoint`/`llm_token` settings
+  and seeds BWOC defaults (`bwoc_transport=a2a`, `bwoc_agent_id=agent-growth-coach`).
+
+### Removed
+
+- OpenClaw gateway client (`gateway.rs`), `LLM_MODEL`, and the `llm_endpoint`/`llm_token` settings.
+
 ## [2026.4.8] - 2026-04-08
 
 First public release.

@@ -1,7 +1,8 @@
 use tauri::State;
 
 use crate::db::DbState;
-use crate::gateway;
+use crate::bwoc;
+use crate::store;
 use crate::models::{GenerateStoryInput, SaveStoryInput, Story, StoryGenerationResult};
 
 const STORY_SYSTEM: &str = "You write vivid, emotionally clear stories that stay grounded in provided context. Use the context as inspiration and factual anchors, but do not invent claims about the user's saved data that are not supported. If context is thin, keep the story more universal than specific.";
@@ -11,12 +12,12 @@ pub async fn generate_story(
     state: State<'_, DbState>,
     input: GenerateStoryInput,
 ) -> Result<StoryGenerationResult, String> {
-    let (endpoint, token) = gateway::llm_config(&state)?;
+    let cfg = bwoc::bwoc_config(&state)?;
 
     let context_summary = {
         let conn = state.0.lock().map_err(|e| e.to_string())?;
 
-        let skills = gateway::query_strings(
+        let skills = store::query_strings(
             &conn,
             "SELECT name, category, current_level, target_level FROM skills ORDER BY updated_at DESC, name ASC LIMIT 5",
             |row| {
@@ -30,7 +31,7 @@ pub async fn generate_story(
             },
         )?;
 
-        let learning = gateway::query_strings(
+        let learning = store::query_strings(
             &conn,
             "SELECT title, item_type, status, COALESCE(description, '') FROM learning_items ORDER BY created_at DESC LIMIT 5",
             |row| {
@@ -43,7 +44,7 @@ pub async fn generate_story(
             },
         )?;
 
-        let routines = gateway::query_strings(
+        let routines = store::query_strings(
             &conn,
             "SELECT name, frequency, COALESCE(description, '') FROM routines WHERE is_active = 1 ORDER BY created_at DESC LIMIT 5",
             |row| {
@@ -56,7 +57,7 @@ pub async fn generate_story(
             },
         )?;
 
-        let goals = gateway::query_strings(
+        let goals = store::query_strings(
             &conn,
             "SELECT title, status, COALESCE(description, ''), COALESCE(target_date, '') FROM goals ORDER BY created_at DESC LIMIT 5",
             |row| {
@@ -106,13 +107,13 @@ pub async fn generate_story(
     ];
 
     let (story, returned_model) =
-        gateway::chat_completion(&endpoint, &token, gateway::LLM_MODEL, &messages, 0.9, 700)
+        bwoc::send_message(&cfg, &messages, 0.9, 700)
             .await?;
 
     Ok(StoryGenerationResult {
         story,
         model: returned_model,
-        provider: "bemind-ai".to_string(),
+        provider: "bwoc".to_string(),
         context_summary,
     })
 }

@@ -50,6 +50,10 @@ fn run_migrations(conn: &Connection) -> SqlResult<()> {
             "008_habit_identity",
             include_str!("../migrations/008_habit_identity.sql"),
         ),
+        (
+            "009_bwoc_migration",
+            include_str!("../migrations/009_bwoc_migration.sql"),
+        ),
     ];
 
     for (name, sql) in migrations {

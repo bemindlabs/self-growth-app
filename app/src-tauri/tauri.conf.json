@@ -1,7 +1,7 @@
 {
   "$schema": "https://raw.githubusercontent.com/nicedoc/schema/master/tauri.conf.json",
   "productName": "Self Growth",
-  "version": "2026.4.8",
+  "version": "2026.6.11",
   "identifier": "com.bemindlabs.growth.v2",
   "build": {
     "frontendDist": "../dist",
