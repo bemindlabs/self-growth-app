@@ -1,6 +1,6 @@
 use crate::db::DbState;
-use crate::store;
 use crate::models::{HealthMetric, HealthSummary, HealthSync};
+use crate::store;
 use tauri::State;
 
 // ---------------------------------------------------------------------------

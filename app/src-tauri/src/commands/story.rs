@@ -1,9 +1,9 @@
 use tauri::State;
 
-use crate::db::DbState;
 use crate::bwoc;
-use crate::store;
+use crate::db::DbState;
 use crate::models::{GenerateStoryInput, SaveStoryInput, Story, StoryGenerationResult};
+use crate::store;
 
 const STORY_SYSTEM: &str = "You write vivid, emotionally clear stories that stay grounded in provided context. Use the context as inspiration and factual anchors, but do not invent claims about the user's saved data that are not supported. If context is thin, keep the story more universal than specific.";
 
@@ -106,9 +106,7 @@ pub async fn generate_story(
         serde_json::json!({"role": "user", "content": user_prompt}),
     ];
 
-    let (story, returned_model) =
-        bwoc::send_message(&cfg, &messages, 0.9, 700)
-            .await?;
+    let (story, returned_model) = bwoc::send_message(&cfg, &messages, 0.9, 700).await?;
 
     Ok(StoryGenerationResult {
         story,

@@ -1,9 +1,9 @@
+use crate::bwoc;
 use crate::commands::constants::{
     CHAT_SYSTEM, COACH_SYSTEM, INSIGHTS_SYSTEM, LIMIT_CONTEXT_SKILLS, MAX_TOKENS_CHAT,
     MAX_TOKENS_COACH, MAX_TOKENS_INSIGHTS, MAX_TOKENS_SUMMARIZE, SUMMARIZE_SYSTEM, TEMP_CHAT,
     TEMP_COACH, TEMP_INSIGHTS, TEMP_SUMMARIZE,
 };
-use crate::bwoc;
 use crate::db::DbState;
 use crate::models::{AiResponse, ChatMessageInput};
 use crate::store;

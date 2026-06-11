@@ -5,12 +5,11 @@
 //! back" — which in BWOC terms is "send a message to an agent, get a reply".
 //!
 //! Three transports are configurable in Settings (`bwoc_transport`):
-//!   - `cli`     — shell out to the local `bwoc run <agent>` (local workspace).
-//!   - `a2a`     — A2A JSON-RPC `message/send` over HTTP to an agent's listener.
-//!                 The URL may be local (`bwoc serve`) or a remote hosted
-//!                 endpoint, which is how you reach a gateway-hosted agent
-//!                 without running your own server.
-//!   - `gateway` — native WS signed-envelope relay (roadmap; see `Transport`).
+//! - `cli` — shell out to the local `bwoc run <agent>` (local workspace).
+//! - `a2a` — A2A JSON-RPC `message/send` over HTTP to an agent's listener. The
+//!   URL may be local (`bwoc serve`) or a remote hosted endpoint, which is how
+//!   you reach a gateway-hosted agent without running your own server.
+//! - `gateway` — native WS signed-envelope relay (roadmap; see `Transport`).
 //!
 //! The agent owns its own LLM backend, so the app no longer holds any LLM
 //! provider endpoint/token/model — only which agent to address.
@@ -125,9 +124,11 @@ async fn send_via_cli(
     messages: &[serde_json::Value],
 ) -> Result<(String, String), String> {
     if messages_have_image(messages) {
-        return Err("Image input is not supported by the CLI transport. Use the \
+        return Err(
+            "Image input is not supported by the CLI transport. Use the \
             'a2a' transport with a vision-capable agent for OCR."
-            .to_string());
+                .to_string(),
+        );
     }
     let task = flatten_messages(messages);
     let agent = cfg.agent_id.clone();
@@ -135,7 +136,11 @@ async fn send_via_cli(
 
     let output = tauri::async_runtime::spawn_blocking(move || {
         let mut cmd = std::process::Command::new("bwoc");
-        cmd.arg("run").arg(&agent).arg("--task").arg(&task).arg("--json");
+        cmd.arg("run")
+            .arg(&agent)
+            .arg("--task")
+            .arg(&task)
+            .arg("--json");
         if !workspace.is_empty() {
             cmd.arg("--workspace").arg(&workspace);
         }
@@ -250,10 +255,8 @@ fn build_a2a_message(messages: &[serde_json::Value]) -> serde_json::Value {
             _ => "User",
         };
         match msg.get("content") {
-            Some(serde_json::Value::String(s)) => {
-                if !s.trim().is_empty() {
-                    text_buf.push_str(&format!("{label}: {}\n\n", s.trim()));
-                }
+            Some(serde_json::Value::String(s)) if !s.trim().is_empty() => {
+                text_buf.push_str(&format!("{label}: {}\n\n", s.trim()));
             }
             Some(serde_json::Value::Array(items)) => {
                 for item in items {
@@ -533,8 +536,14 @@ mod tests {
         });
         let result = format_context(&context);
         for label in [
-            "Skills:", "Routines:", "Goals:", "Learning:", "Streaks:",
-            "Health (7-day avg):", "Recent Health Checkups:", "Pending Todos:",
+            "Skills:",
+            "Routines:",
+            "Goals:",
+            "Learning:",
+            "Streaks:",
+            "Health (7-day avg):",
+            "Recent Health Checkups:",
+            "Pending Todos:",
         ] {
             assert!(result.contains(label), "missing {label}");
         }

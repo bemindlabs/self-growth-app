@@ -103,9 +103,7 @@ pub async fn semantic_search(
         serde_json::json!({"role": "user", "content": user_prompt}),
     ];
 
-    let (response, _) =
-        bwoc::send_message(&cfg, &messages, 0.0, 100)
-            .await?;
+    let (response, _) = bwoc::send_message(&cfg, &messages, 0.0, 100).await?;
 
     // Parse the LLM response — extract numbers
     let indices: Vec<usize> = response

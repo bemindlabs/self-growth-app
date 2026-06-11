@@ -73,7 +73,9 @@ mod tests {
         let conn = setup_test_db();
         let result = get_required_setting(&conn, "bwoc_agent_id");
         assert!(result.is_err());
-        assert!(result.unwrap_err().contains("Missing 'bwoc_agent_id' setting"));
+        assert!(result
+            .unwrap_err()
+            .contains("Missing 'bwoc_agent_id' setting"));
     }
 
     #[test]

@@ -1,5 +1,5 @@
-use crate::db::DbState;
 use crate::bwoc;
+use crate::db::DbState;
 use std::path::Path;
 use tauri::State;
 
@@ -55,9 +55,7 @@ pub async fn ocr_extract(
         }),
     ];
 
-    let (content, _) =
-        bwoc::send_message(&cfg, &messages, 0.1, 2000)
-            .await?;
+    let (content, _) = bwoc::send_message(&cfg, &messages, 0.1, 2000).await?;
     Ok(content)
 }
 
