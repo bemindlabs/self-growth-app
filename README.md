@@ -1,6 +1,6 @@
 # Self Growth
 
-AI-powered personal development desktop app built with Tauri v2, React 19, and Rust. Track habits, skills, routines, goals, and health — with intelligent coaching powered by local vector embeddings and OpenClaw LLM integration.
+AI-powered personal development desktop app built with Tauri v2, React 19, and Rust. Track habits, skills, routines, goals, and health — with intelligent coaching powered by local vector embeddings and the BWOC agent fleet.
 
 **Bundle ID:** `com.bemindlabs.growth.v2`
 
@@ -78,13 +78,14 @@ app/
 ├── src-tauri/                  # Rust backend
 │   ├── src/
 │   │   ├── commands/           # 19 Tauri IPC command modules
-│   │   ├── gateway.rs          # LLM client (chat completions API)
+│   │   ├── bwoc.rs             # BWOC agent transport (A2A / CLI)
+│   │   ├── store.rs            # Settings + query helpers (shared)
 │   │   ├── db.rs               # SQLite init + migrations
 │   │   ├── embedder.rs         # Local vector embeddings (fastembed)
 │   │   ├── search.rs           # Cosine similarity search
 │   │   ├── models.rs           # Domain models
 │   │   └── lib.rs              # Tauri app setup
-│   └── migrations/             # 7 SQL migration files
+│   └── migrations/             # 9 SQL migration files
 │
 ├── package.json
 ├── tauri.conf.json
@@ -116,12 +117,13 @@ SQLite with WAL mode, stored at:
 - **Linux:** `~/.local/share/self-growth/self-growth.db`
 - **Windows:** `%AppData%\BemindLabs\Self Growth\self-growth.db`
 
-### LLM Integration
+### AI Integration (BWOC)
 
-Connects to any OpenClaw-compatible endpoint (`/v1/chat/completions`):
-- Configurable endpoint, model, and bearer token in Settings
+AI features address an agent in the **BWOC** fleet — the agent owns its own LLM backend, so the app stores no LLM endpoint/token/model:
+- Pluggable transport in Settings: **A2A over HTTP** (local `bwoc serve` or a hosted endpoint) or the **local `bwoc` CLI** (desktop only)
+- Default agent: `agent-growth-coach`
 - Local vector embeddings via fastembed (AllMiniLM-L6-v2) for semantic search
-- AI features: coaching, insights, weekly summaries, story generation, RAG search
+- AI features: coaching, insights, weekly summaries, story generation, RAG search, OCR
 
 ## License
 
