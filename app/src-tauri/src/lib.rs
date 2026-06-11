@@ -1,9 +1,10 @@
+mod bwoc;
 mod commands;
 mod db;
 mod embedder;
-mod gateway;
 mod models;
 mod search;
+mod store;
 
 use db::DbState;
 use embedder::EmbedderState;
@@ -67,7 +68,8 @@ pub fn run() {
             commands::settings::set_app_setting,
             commands::settings::get_all_app_settings,
             commands::settings::reset_app_settings,
-            commands::settings::test_ai_gateway_connection,
+            commands::settings::test_bwoc_connection,
+            commands::settings::is_mobile_platform,
             // RAG
             commands::rag::semantic_search,
             commands::rag::rebuild_embeddings,
@@ -88,7 +90,7 @@ pub fn run() {
             commands::habits::delete_habit,
             commands::habits::toggle_habit,
             commands::habits::get_habit_logs,
-            // AI Gateway
+            // AI (BWOC)
             commands::ai::ai_coach,
             commands::ai::ai_insights,
             commands::ai::ai_summarize,

@@ -2,8 +2,13 @@ import { useEffect, useState } from "react";
 import { invoke } from "@tauri-apps/api/core";
 import { save, open } from "@tauri-apps/plugin-dialog";
 
-interface LlmSettingsState {
-  endpoint: string;
+type BwocTransport = "a2a" | "cli" | "gateway";
+
+interface BwocSettingsState {
+  transport: BwocTransport;
+  agentId: string;
+  agentUrl: string;
+  workspacePath: string;
   token: string;
 }
 
@@ -12,8 +17,11 @@ interface GfitSettingsState {
   clientSecret: string;
 }
 
-const defaultLlmSettings: LlmSettingsState = {
-  endpoint: "",
+const defaultBwocSettings: BwocSettingsState = {
+  transport: "a2a",
+  agentId: "agent-growth-coach",
+  agentUrl: "",
+  workspacePath: "",
   token: "",
 };
 
@@ -24,15 +32,17 @@ const defaultGfitSettings: GfitSettingsState = {
 
 export default function SettingsPage() {
   const [settings, setSettings] = useState<[string, string][]>([]);
-  const [llmSettings, setLlmSettings] = useState<LlmSettingsState>(defaultLlmSettings);
+  const [isMobile, setIsMobile] = useState(false);
+  const [bwocSettings, setBwocSettings] = useState<BwocSettingsState>(defaultBwocSettings);
   const [gfitSettings, setGfitSettings] = useState<GfitSettingsState>(defaultGfitSettings);
   const [saveMessage, setSaveMessage] = useState<string | null>(null);
   const [confirmReset, setConfirmReset] = useState(false);
   const [testing, setTesting] = useState(false);
   const [testResult, setTestResult] = useState<{
     ok: boolean;
-    llm_endpoint?: string;
-    available_models?: string[];
+    transport?: string;
+    agent?: string;
+    detail?: string;
     error?: string;
   } | null>(null);
 
@@ -41,9 +51,12 @@ export default function SettingsPage() {
     setSettings(allSettings);
 
     const settingsMap = new Map(allSettings);
-    setLlmSettings({
-      endpoint: settingsMap.get("llm_endpoint") ?? defaultLlmSettings.endpoint,
-      token: settingsMap.get("llm_token") ?? defaultLlmSettings.token,
+    setBwocSettings({
+      transport: (settingsMap.get("bwoc_transport") as BwocTransport) ?? defaultBwocSettings.transport,
+      agentId: settingsMap.get("bwoc_agent_id") ?? defaultBwocSettings.agentId,
+      agentUrl: settingsMap.get("bwoc_agent_url") ?? defaultBwocSettings.agentUrl,
+      workspacePath: settingsMap.get("bwoc_workspace_path") ?? defaultBwocSettings.workspacePath,
+      token: settingsMap.get("bwoc_token") ?? defaultBwocSettings.token,
     });
     setGfitSettings({
       clientId: settingsMap.get("gfit_client_id") ?? defaultGfitSettings.clientId,
@@ -53,6 +66,15 @@ export default function SettingsPage() {
 
   useEffect(() => {
     refreshSettings().catch(console.error);
+    invoke<boolean>("is_mobile_platform")
+      .then((mobile) => {
+        setIsMobile(mobile);
+        // On mobile the CLI transport is unavailable — fall back to A2A.
+        if (mobile) {
+          setBwocSettings((c) => (c.transport === "cli" ? { ...c, transport: "a2a" } : c));
+        }
+      })
+      .catch(console.error);
   }, []);
 
   const showTemporaryMessage = (msg: string) => {
@@ -60,10 +82,13 @@ export default function SettingsPage() {
     setTimeout(() => setSaveMessage(null), 3000);
   };
 
-  const handleSaveLlmSettings = async () => {
+  const handleSaveBwocSettings = async () => {
     const entries: Array<[string, string]> = [
-      ["llm_endpoint", llmSettings.endpoint],
-      ["llm_token", llmSettings.token],
+      ["bwoc_transport", bwocSettings.transport],
+      ["bwoc_agent_id", bwocSettings.agentId],
+      ["bwoc_agent_url", bwocSettings.agentUrl],
+      ["bwoc_workspace_path", bwocSettings.workspacePath],
+      ["bwoc_token", bwocSettings.token],
     ];
 
     for (const [key, value] of entries) {
@@ -71,7 +96,7 @@ export default function SettingsPage() {
     }
 
     await refreshSettings();
-    showTemporaryMessage("Saved LLM settings.");
+    showTemporaryMessage("Saved BWOC settings.");
   };
 
   const handleTestConnection = async () => {
@@ -80,10 +105,11 @@ export default function SettingsPage() {
     try {
       const result = await invoke<{
         ok: boolean;
-        llm_endpoint?: string;
-        available_models?: string[];
+        transport?: string;
+        agent?: string;
+        detail?: string;
         error?: string;
-      }>("test_ai_gateway_connection");
+      }>("test_bwoc_connection");
       setTestResult(result);
     } catch (e) {
       setTestResult({ ok: false, error: String(e) });
@@ -106,46 +132,104 @@ export default function SettingsPage() {
       <div className="space-y-6">
         <div className="bg-card border border-border rounded-lg p-4 space-y-4">
           <div>
-            <h3 className="font-medium mb-1">LLM Connection</h3>
+            <h3 className="font-medium mb-1">BWOC Agent</h3>
             <p className="text-xs text-muted-foreground">
-              Configure the LLM endpoint for AI coaching, insights, and stories.
+              AI coaching, insights, stories, and OCR are handled by an agent in
+              your BWOC fleet. Choose how the app reaches it.
             </p>
           </div>
 
           <div className="grid md:grid-cols-2 gap-3">
             <div>
-              <label className="block text-sm font-medium mb-2">Endpoint</label>
-              <input
-                type="url"
-                placeholder="http://127.0.0.1:18789/v1"
-                value={llmSettings.endpoint}
+              <label className="block text-sm font-medium mb-2">Transport</label>
+              <select
+                value={bwocSettings.transport}
                 onChange={(e) =>
-                  setLlmSettings((current) => ({ ...current, endpoint: e.target.value }))
+                  setBwocSettings((c) => ({ ...c, transport: e.target.value as BwocTransport }))
                 }
                 className="w-full px-3 py-2 border border-border rounded-md text-sm bg-background"
-              />
+              >
+                <option value="a2a">A2A over HTTP (local or hosted)</option>
+                {!isMobile && <option value="cli">Local bwoc CLI</option>}
+                <option value="gateway">Gateway relay (coming soon)</option>
+              </select>
             </div>
 
             <div>
-              <label className="block text-sm font-medium mb-2">Gateway Token</label>
+              <label className="block text-sm font-medium mb-2">Agent ID</label>
               <input
-                type="password"
-                placeholder="Gateway token"
-                value={llmSettings.token}
+                type="text"
+                placeholder="agent-growth-coach"
+                value={bwocSettings.agentId}
                 onChange={(e) =>
-                  setLlmSettings((current) => ({ ...current, token: e.target.value }))
+                  setBwocSettings((c) => ({ ...c, agentId: e.target.value }))
                 }
                 className="w-full px-3 py-2 border border-border rounded-md text-sm bg-background"
               />
             </div>
+
+            {bwocSettings.transport === "a2a" && (
+              <>
+                <div>
+                  <label className="block text-sm font-medium mb-2">Agent URL (A2A)</label>
+                  <input
+                    type="url"
+                    placeholder="http://127.0.0.1:9999  or  https://host.tailnet.ts.net:10600"
+                    value={bwocSettings.agentUrl}
+                    onChange={(e) =>
+                      setBwocSettings((c) => ({ ...c, agentUrl: e.target.value }))
+                    }
+                    className="w-full px-3 py-2 border border-border rounded-md text-sm bg-background"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-2">Token (optional)</label>
+                  <input
+                    type="password"
+                    placeholder="Bearer token, if the endpoint requires one"
+                    value={bwocSettings.token}
+                    onChange={(e) =>
+                      setBwocSettings((c) => ({ ...c, token: e.target.value }))
+                    }
+                    className="w-full px-3 py-2 border border-border rounded-md text-sm bg-background"
+                  />
+                </div>
+              </>
+            )}
+
+            {bwocSettings.transport === "cli" && (
+              <div className="md:col-span-2">
+                <label className="block text-sm font-medium mb-2">
+                  Workspace path (optional)
+                </label>
+                <input
+                  type="text"
+                  placeholder="/Users/you/workspaces/bwoc  (leave empty to auto-resolve)"
+                  value={bwocSettings.workspacePath}
+                  onChange={(e) =>
+                    setBwocSettings((c) => ({ ...c, workspacePath: e.target.value }))
+                  }
+                  className="w-full px-3 py-2 border border-border rounded-md text-sm bg-background"
+                />
+              </div>
+            )}
           </div>
+
+          {bwocSettings.transport === "gateway" && (
+            <p className="text-xs text-muted-foreground">
+              The native gateway (WS relay) transport is on the roadmap. To reach a
+              gateway-hosted agent today without running your own server, use the
+              <span className="font-medium"> A2A</span> transport and point the Agent URL
+              at the hosted endpoint.
+            </p>
+          )}
 
           <div className="flex gap-2">
             <button
-              onClick={handleSaveLlmSettings}
+              onClick={handleSaveBwocSettings}
               className="px-4 py-2 bg-primary text-primary-foreground rounded-md text-sm"
             >
-              Save LLM settings
+              Save BWOC settings
             </button>
             <button
               onClick={handleTestConnection}
@@ -166,14 +250,12 @@ export default function SettingsPage() {
             >
               {testResult.ok ? (
                 <div className="space-y-1">
-                  <p className="font-medium">Connected successfully</p>
+                  <p className="font-medium">Reachable</p>
                   <p className="text-xs opacity-80">
-                    Endpoint: {testResult.llm_endpoint}
+                    {testResult.transport?.toUpperCase()} · {testResult.agent}
                   </p>
-                  {testResult.available_models && testResult.available_models.length > 0 && (
-                    <p className="text-xs opacity-80">
-                      Available: {testResult.available_models.join(", ")}
-                    </p>
+                  {testResult.detail && (
+                    <p className="text-xs opacity-80">{testResult.detail}</p>
                   )}
                 </div>
               ) : (

@@ -24,11 +24,11 @@ describe("SettingsPage", () => {
     expect(screen.getByText("Settings")).toBeTruthy();
   });
 
-  it("renders LLM Connection section", async () => {
+  it("renders BWOC Agent section", async () => {
     render(<SettingsPage />);
     await waitFor(() => {
-      expect(screen.getByText("LLM Connection")).toBeTruthy();
-      expect(screen.getByText("Save LLM settings")).toBeTruthy();
+      expect(screen.getByText("BWOC Agent")).toBeTruthy();
+      expect(screen.getByText("Save BWOC settings")).toBeTruthy();
       expect(screen.getByText("Test Connection")).toBeTruthy();
     });
   });
@@ -75,31 +75,37 @@ describe("SettingsPage", () => {
     expect(screen.getByText("Yes, reset all")).toBeTruthy();
   });
 
-  it("saves LLM settings", async () => {
+  it("saves BWOC settings", async () => {
     render(<SettingsPage />);
     await waitFor(() => {
-      expect(screen.getByText("Save LLM settings")).toBeTruthy();
+      expect(screen.getByText("Save BWOC settings")).toBeTruthy();
     });
 
-    fireEvent.click(screen.getByText("Save LLM settings"));
+    fireEvent.click(screen.getByText("Save BWOC settings"));
 
     await waitFor(() => {
-      expect(mockInvoke).toHaveBeenCalledWith("set_app_setting", { key: "llm_endpoint", value: "" });
-      expect(mockInvoke).toHaveBeenCalledWith("set_app_setting", { key: "llm_token", value: "" });
+      expect(mockInvoke).toHaveBeenCalledWith("set_app_setting", {
+        key: "bwoc_transport",
+        value: "a2a",
+      });
+      expect(mockInvoke).toHaveBeenCalledWith("set_app_setting", {
+        key: "bwoc_agent_id",
+        value: "agent-growth-coach",
+      });
     });
   });
 
   it("displays stored settings", async () => {
     mockInvoke.mockImplementation(async (cmd: string) => {
       if (cmd === "get_all_app_settings")
-        return [["llm_endpoint", "http://localhost:18789/v1"]];
+        return [["bwoc_agent_id", "agent-growth-coach"]];
       return undefined;
     });
 
     render(<SettingsPage />);
     await waitFor(() => {
       expect(screen.getByText("Stored Settings")).toBeTruthy();
-      expect(screen.getByText("llm_endpoint")).toBeTruthy();
+      expect(screen.getByText("bwoc_agent_id")).toBeTruthy();
     });
   });
 });

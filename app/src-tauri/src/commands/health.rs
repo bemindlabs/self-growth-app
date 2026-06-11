@@ -1,6 +1,6 @@
 use crate::db::DbState;
-use crate::gateway;
 use crate::models::{HealthMetric, HealthSummary, HealthSync};
+use crate::store;
 use tauri::State;
 
 // ---------------------------------------------------------------------------
@@ -269,7 +269,7 @@ const GOOGLE_FIT_SCOPES: &str = "https://www.googleapis.com/auth/fitness.activit
 #[tauri::command]
 pub fn start_google_fit_auth(state: State<DbState>) -> Result<String, String> {
     let conn = state.0.lock().map_err(|e| e.to_string())?;
-    let client_id = gateway::get_required_setting(&conn, "gfit_client_id")?;
+    let client_id = store::get_required_setting(&conn, "gfit_client_id")?;
 
     let redirect_uri = "urn:ietf:wg:oauth:2.0:oob";
 
@@ -301,8 +301,8 @@ pub async fn complete_google_fit_auth(
 ) -> Result<(), String> {
     let (client_id, client_secret) = {
         let conn = state.0.lock().map_err(|e| e.to_string())?;
-        let id = gateway::get_required_setting(&conn, "gfit_client_id")?;
-        let secret = gateway::get_required_setting(&conn, "gfit_client_secret")?;
+        let id = store::get_required_setting(&conn, "gfit_client_id")?;
+        let secret = store::get_required_setting(&conn, "gfit_client_secret")?;
         (id, secret)
     };
 
@@ -351,9 +351,9 @@ fn set_setting(conn: &rusqlite::Connection, key: &str, value: &str) -> Result<()
 async fn refresh_google_token(state: &State<'_, DbState>) -> Result<String, String> {
     let (client_id, client_secret, refresh_token) = {
         let conn = state.0.lock().map_err(|e| e.to_string())?;
-        let id = gateway::get_required_setting(&conn, "gfit_client_id")?;
-        let secret = gateway::get_required_setting(&conn, "gfit_client_secret")?;
-        let token = gateway::get_required_setting(&conn, "gfit_refresh_token")?;
+        let id = store::get_required_setting(&conn, "gfit_client_id")?;
+        let secret = store::get_required_setting(&conn, "gfit_client_secret")?;
+        let token = store::get_required_setting(&conn, "gfit_refresh_token")?;
         (id, secret, token)
     };
 
@@ -420,7 +420,7 @@ pub async fn sync_google_fit(
     // Get or refresh access token
     let access_token = {
         let conn = state.0.lock().map_err(|e| e.to_string())?;
-        gateway::get_setting(&conn, "gfit_access_token").filter(|t| !t.is_empty())
+        store::get_setting(&conn, "gfit_access_token").filter(|t| !t.is_empty())
     };
 
     let token = match access_token {

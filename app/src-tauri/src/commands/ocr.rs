@@ -1,5 +1,5 @@
+use crate::bwoc;
 use crate::db::DbState;
-use crate::gateway;
 use std::path::Path;
 use tauri::State;
 
@@ -13,7 +13,7 @@ pub async fn ocr_extract(
     image_path: String,
     mode: Option<String>,
 ) -> Result<String, String> {
-    let (endpoint, token) = gateway::llm_config(&state)?;
+    let cfg = bwoc::bwoc_config(&state)?;
 
     let path = Path::new(&image_path);
     if !path.exists() {
@@ -55,9 +55,7 @@ pub async fn ocr_extract(
         }),
     ];
 
-    let (content, _) =
-        gateway::chat_completion(&endpoint, &token, gateway::LLM_MODEL, &messages, 0.1, 2000)
-            .await?;
+    let (content, _) = bwoc::send_message(&cfg, &messages, 0.1, 2000).await?;
     Ok(content)
 }
 

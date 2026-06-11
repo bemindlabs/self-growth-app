@@ -1,6 +1,6 @@
 [package]
 name = "self-growth"
-version = "2026.4.8"
+version = "2026.6.11"
 edition = "2021"
 
 [lib]
