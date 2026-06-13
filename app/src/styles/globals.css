@@ -31,6 +31,12 @@ body,
   height: 100%;
 }
 
+html {
+  /* Prevent iOS from auto-enlarging text and reflowing the layout. */
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
 body {
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   background-color: var(--color-background);
@@ -39,6 +45,8 @@ body {
   -webkit-user-select: none;
   user-select: none;
   overscroll-behavior: none;
+  /* Disable double-tap-to-zoom (and its 300ms tap delay) for an app-like feel. */
+  touch-action: manipulation;
 }
 
 /* Focus-visible for keyboard navigation */
