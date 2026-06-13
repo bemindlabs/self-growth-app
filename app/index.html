@@ -12,9 +12,72 @@
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="default" />
     <title>Self Growth</title>
+    <style>
+      /* In-app splash — held ~3s then fades. Mirrors the iOS LaunchScreen so the
+         transition is seamless. Inline + pre-React so there is no white flash. */
+      #app-splash {
+        position: fixed;
+        inset: 0;
+        z-index: 9999;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        transition: opacity 0.5s ease;
+      }
+      #app-splash img {
+        width: 120px;
+        height: 120px;
+        border-radius: 27px;
+        box-shadow: 0 12px 32px rgba(0, 0, 0, 0.28);
+      }
+      #app-splash .sp-title {
+        margin-top: 22px;
+        color: #ffffff;
+        font-size: 30px;
+        font-weight: 700;
+        letter-spacing: -0.01em;
+      }
+      #app-splash .sp-sub {
+        position: absolute;
+        bottom: calc(32px + env(safe-area-inset-bottom, 0px));
+        color: rgba(255, 255, 255, 0.72);
+        font-size: 13px;
+        letter-spacing: 0.02em;
+      }
+      #app-splash.sp-hide {
+        opacity: 0;
+        pointer-events: none;
+      }
+      @media (prefers-reduced-motion: reduce) {
+        #app-splash {
+          transition: none;
+        }
+      }
+    </style>
   </head>
   <body>
+    <div id="app-splash" aria-hidden="true">
+      <img src="/favicon.png" alt="" />
+      <div class="sp-title">Self Growth</div>
+      <div class="sp-sub">powered by BWOC</div>
+    </div>
     <div id="root"></div>
+    <script>
+      // Hold the splash for 3s, fade out, then remove from the DOM.
+      window.addEventListener("DOMContentLoaded", function () {
+        setTimeout(function () {
+          var s = document.getElementById("app-splash");
+          if (!s) return;
+          s.classList.add("sp-hide");
+          setTimeout(function () {
+            if (s && s.parentNode) s.parentNode.removeChild(s);
+          }, 550);
+        }, 3000);
+      });
+    </script>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>
