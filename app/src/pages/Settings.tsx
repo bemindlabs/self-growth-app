@@ -82,7 +82,7 @@ export default function SettingsPage() {
     setTimeout(() => setSaveMessage(null), 3000);
   };
 
-  const handleSaveBwocSettings = async () => {
+  const persistBwocSettings = async () => {
     const entries: Array<[string, string]> = [
       ["bwoc_transport", bwocSettings.transport],
       ["bwoc_agent_id", bwocSettings.agentId],
@@ -90,11 +90,13 @@ export default function SettingsPage() {
       ["bwoc_workspace_path", bwocSettings.workspacePath],
       ["bwoc_token", bwocSettings.token],
     ];
-
     for (const [key, value] of entries) {
       await invoke("set_app_setting", { key, value });
     }
+  };
 
+  const handleSaveBwocSettings = async () => {
+    await persistBwocSettings();
     await refreshSettings();
     showTemporaryMessage("Saved BWOC settings.");
   };
@@ -103,6 +105,10 @@ export default function SettingsPage() {
     setTesting(true);
     setTestResult(null);
     try {
+      // Persist the current field values first — test_bwoc_connection reads the
+      // saved config, not the form state, so testing before saving would report
+      // "No agent URL configured" even when the field is filled.
+      await persistBwocSettings();
       const result = await invoke<{
         ok: boolean;
         transport?: string;
