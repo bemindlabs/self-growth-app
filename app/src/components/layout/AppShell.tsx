@@ -48,7 +48,7 @@ export default function AppShell() {
   const [moreOpen, setMoreOpen] = useState(false);
 
   return (
-    <div className="flex h-screen">
+    <div className="flex h-screen safe-area-x">
       {/* Desktop Sidebar */}
       <aside className="hidden md:flex w-64 flex-col border-r border-border bg-card safe-area-top">
         <div className="p-4 border-b border-border">
@@ -79,10 +79,10 @@ export default function AppShell() {
 
       {/* Main Content */}
       <main className="flex-1 flex flex-col overflow-hidden">
-        <div className="flex-1 overflow-y-auto p-4 md:p-6 pb-20 md:pb-14">
+        <div className="flex-1 overflow-y-auto app-content">
           <Outlet />
         </div>
-        <footer className="hidden md:block border-t border-border bg-card px-4 py-2 text-center">
+        <footer className="hidden md:block border-t border-border bg-card px-4 py-2 text-center safe-area-bottom">
           <p className="text-[11px] text-muted-foreground">
             Powered by Bemind Technology Co.,Ltd. (Bemindlabs) &middot; v{__APP_VERSION__}
           </p>
@@ -90,7 +90,7 @@ export default function AppShell() {
       </main>
 
       {/* Mobile Bottom Nav */}
-      <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-card border-t border-border safe-area-bottom z-40">
+      <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-card border-t border-border safe-area-bottom safe-area-x z-40">
         <div className="flex justify-around py-1.5 relative">
           {mobileNavItems.map((item) => (
             <NavLink
