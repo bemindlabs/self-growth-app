@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
 import { invoke } from "@tauri-apps/api/core";
 import { save, open } from "@tauri-apps/plugin-dialog";
+import { useTranslation } from "react-i18next";
+import { setLanguage, type Language } from "@/i18n";
 
 type BwocTransport = "a2a" | "cli" | "gateway";
 
@@ -131,23 +133,45 @@ export default function SettingsPage() {
     showTemporaryMessage("All settings reset to defaults.");
   };
 
+  const { t, i18n } = useTranslation();
+  const currentLang = (i18n.language?.startsWith("th") ? "th" : "en") as Language;
+
   return (
     <div>
-      <h2 className="text-2xl font-bold mb-6">Settings</h2>
+      <h2 className="text-2xl font-bold mb-6">{t("settings.title")}</h2>
 
       <div className="space-y-6">
+        <div className="bg-card border border-border rounded-lg p-4 space-y-3">
+          <div>
+            <h3 className="font-medium mb-1">{t("language.title")}</h3>
+            <p className="text-xs text-muted-foreground">{t("language.description")}</p>
+          </div>
+          <div className="flex gap-2">
+            {(["en", "th"] as Language[]).map((lng) => (
+              <button
+                key={lng}
+                onClick={() => setLanguage(lng)}
+                className={
+                  currentLang === lng
+                    ? "px-4 py-2 rounded-md text-sm bg-primary text-primary-foreground"
+                    : "px-4 py-2 rounded-md text-sm border border-border"
+                }
+              >
+                {lng === "en" ? t("language.english") : t("language.thai")}
+              </button>
+            ))}
+          </div>
+        </div>
+
         <div className="bg-card border border-border rounded-lg p-4 space-y-4">
           <div>
-            <h3 className="font-medium mb-1">BWOC Agent</h3>
-            <p className="text-xs text-muted-foreground">
-              AI coaching, insights, stories, and OCR are handled by an agent in
-              your BWOC fleet. Choose how the app reaches it.
-            </p>
+            <h3 className="font-medium mb-1">{t("settings.bwoc.title")}</h3>
+            <p className="text-xs text-muted-foreground">{t("settings.bwoc.description")}</p>
           </div>
 
           <div className="grid md:grid-cols-2 gap-3">
             <div>
-              <label className="block text-sm font-medium mb-2">Transport</label>
+              <label className="block text-sm font-medium mb-2">{t("settings.bwoc.transport")}</label>
               <select
                 value={bwocSettings.transport}
                 onChange={(e) =>
@@ -162,7 +186,7 @@ export default function SettingsPage() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium mb-2">Agent ID</label>
+              <label className="block text-sm font-medium mb-2">{t("settings.bwoc.agentId")}</label>
               <input
                 type="text"
                 placeholder="agent-growth-coach"
@@ -177,7 +201,7 @@ export default function SettingsPage() {
             {bwocSettings.transport === "a2a" && (
               <>
                 <div>
-                  <label className="block text-sm font-medium mb-2">Agent URL (A2A)</label>
+                  <label className="block text-sm font-medium mb-2">{t("settings.bwoc.agentUrl")}</label>
                   <input
                     type="url"
                     placeholder="http://127.0.0.1:9999  or  https://host.tailnet.ts.net:10600"
@@ -189,7 +213,7 @@ export default function SettingsPage() {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium mb-2">Token (optional)</label>
+                  <label className="block text-sm font-medium mb-2">{t("settings.bwoc.token")}</label>
                   <input
                     type="password"
                     placeholder="Bearer token, if the endpoint requires one"
@@ -206,7 +230,7 @@ export default function SettingsPage() {
             {bwocSettings.transport === "cli" && (
               <div className="md:col-span-2">
                 <label className="block text-sm font-medium mb-2">
-                  Workspace path (optional)
+                  {t("settings.bwoc.workspacePath")}
                 </label>
                 <input
                   type="text"
@@ -235,14 +259,14 @@ export default function SettingsPage() {
               onClick={handleSaveBwocSettings}
               className="px-4 py-2 bg-primary text-primary-foreground rounded-md text-sm"
             >
-              Save BWOC settings
+              {t("settings.bwoc.save")}
             </button>
             <button
               onClick={handleTestConnection}
               disabled={testing}
               className="px-4 py-2 border border-border rounded-md text-sm disabled:opacity-50"
             >
-              {testing ? "Testing..." : "Test Connection"}
+              {testing ? t("settings.bwoc.testing") : t("settings.bwoc.test")}
             </button>
           </div>
 
@@ -256,7 +280,7 @@ export default function SettingsPage() {
             >
               {testResult.ok ? (
                 <div className="space-y-1">
-                  <p className="font-medium">Reachable</p>
+                  <p className="font-medium">{t("settings.bwoc.reachable")}</p>
                   <p className="text-xs opacity-80">
                     {testResult.transport?.toUpperCase()} · {testResult.agent}
                   </p>
@@ -273,7 +297,7 @@ export default function SettingsPage() {
 
         <div className="bg-card border border-border rounded-lg p-4 space-y-4">
           <div>
-            <h3 className="font-medium mb-1">Google Fit</h3>
+            <h3 className="font-medium mb-1">{t("settings.googleFit.title")}</h3>
             <p className="text-xs text-muted-foreground">
               Configure OAuth credentials for Google Fit sync. Create a Desktop
               app in Google Cloud Console with Fitness API enabled.
@@ -321,13 +345,13 @@ export default function SettingsPage() {
             }}
             className="px-4 py-2 bg-primary text-primary-foreground rounded-md text-sm"
           >
-            Save Google Fit settings
+            {t("settings.googleFit.save")}
           </button>
         </div>
 
         <div className="bg-card border border-border rounded-lg p-4 space-y-3">
           <div>
-            <h3 className="font-medium mb-1">Backup & Restore</h3>
+            <h3 className="font-medium mb-1">{t("settings.backup.title")}</h3>
             <p className="text-xs text-muted-foreground">
               Export your entire database to a file, or restore from a previous backup.
             </p>
@@ -393,7 +417,7 @@ export default function SettingsPage() {
         </div>
 
         <div className="bg-card border border-border rounded-lg p-4">
-          <h3 className="font-medium mb-1">Reset Settings</h3>
+          <h3 className="font-medium mb-1">{t("settings.reset.title")}</h3>
           <p className="text-xs text-muted-foreground mb-3">
             Clear all stored settings and revert to defaults.
           </p>
@@ -418,7 +442,7 @@ export default function SettingsPage() {
               onClick={() => setConfirmReset(true)}
               className="px-4 py-2 border border-destructive text-destructive rounded-md text-sm"
             >
-              Reset to defaults
+              {t("settings.reset.action")}
             </button>
           )}
         </div>
@@ -428,7 +452,7 @@ export default function SettingsPage() {
         )}
 
         <div className="bg-card border border-border rounded-lg p-4">
-          <h3 className="font-medium mb-3">About</h3>
+          <h3 className="font-medium mb-3">{t("settings.about.title")}</h3>
           <div className="text-sm text-muted-foreground space-y-1">
             <p>Self Growth v{__APP_VERSION__}</p>
             <p>Self-development tracking app with AI-powered recommendations.</p>
