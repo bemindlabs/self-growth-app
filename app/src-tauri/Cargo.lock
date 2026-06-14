@@ -4307,7 +4307,7 @@ dependencies = [
 
 [[package]]
 name = "self-growth"
-version = "2026.6.11"
+version = "2026.6.14"
 dependencies = [
  "chrono",
  "fastembed",

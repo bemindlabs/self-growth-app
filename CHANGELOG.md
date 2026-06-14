@@ -2,6 +2,22 @@
 
 All notable changes to Self Growth will be documented in this file.
 
+## [2026.6.14] - 2026-06-14
+
+### Added
+
+- **Thai language (ไทย)** with an in-app language switcher in Settings (i18next).
+- **New app icon** — a sprout / growth motif on the indigo→purple brand gradient — across desktop, iOS, Android, and web.
+- **iOS launch / splash screen** (sprout + "Self Growth" + "powered by BWOC"), held ~3s.
+
+### Changed / Fixed
+
+- iOS **safe-area insets** now respected (notch / Dynamic Island / home indicator) via `viewport-fit=cover`.
+- iOS **webview zoom disabled** (pinch, input-focus auto-zoom, double-tap).
+- Settings **"Test Connection"** persists the form values first — fixes a false "No agent URL configured" when the URL field was filled.
+- Committed the regenerated **iOS/Android project** (signing, launch screen, app icons) to the repo so mobile builds reproduce from a clean clone.
+- Docs (README / CLAUDE / VISION) updated for the BWOC migration.
+
 ## [2026.6.11] - 2026-06-11
 
 ### Changed
