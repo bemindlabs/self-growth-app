@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { todosApi, type Todo } from "@/api/todos";
 import { goalsApi, type Goal } from "@/api/goals";
 import {
@@ -17,11 +18,13 @@ import { cn } from "@/lib/utils";
 
 type FilterTab = "all" | "today" | "overdue" | "completed";
 
-const priorityConfig: Record<string, { label: string; color: string; bg: string }> = {
-  urgent: { label: "Urgent", color: "text-destructive", bg: "bg-destructive/10" },
-  high: { label: "High", color: "text-warning", bg: "bg-warning/10" },
-  medium: { label: "Medium", color: "text-info", bg: "bg-info/10" },
-  low: { label: "Low", color: "text-muted-foreground", bg: "bg-secondary" },
+type TFunc = (key: string, opts?: Record<string, unknown>) => string;
+
+const priorityConfig: Record<string, { color: string; bg: string }> = {
+  urgent: { color: "text-destructive", bg: "bg-destructive/10" },
+  high: { color: "text-warning", bg: "bg-warning/10" },
+  medium: { color: "text-info", bg: "bg-info/10" },
+  low: { color: "text-muted-foreground", bg: "bg-secondary" },
 };
 
 function isOverdue(todo: Todo): boolean {
@@ -29,21 +32,22 @@ function isOverdue(todo: Todo): boolean {
   return todo.due_date < new Date().toISOString().slice(0, 10);
 }
 
-function formatDate(date: string | null): string {
+function formatDate(date: string | null, t: TFunc): string {
   if (!date) return "";
   const d = new Date(date + "T00:00:00");
   const today = new Date();
   today.setHours(0, 0, 0, 0);
   const diff = Math.round((d.getTime() - today.getTime()) / 86400000);
-  if (diff === 0) return "Today";
-  if (diff === 1) return "Tomorrow";
-  if (diff === -1) return "Yesterday";
-  if (diff < -1) return `${Math.abs(diff)}d overdue`;
-  if (diff <= 7) return `In ${diff}d`;
+  if (diff === 0) return t("todos.dateToday");
+  if (diff === 1) return t("todos.dateTomorrow");
+  if (diff === -1) return t("todos.dateYesterday");
+  if (diff < -1) return t("todos.dateOverdue", { count: Math.abs(diff) });
+  if (diff <= 7) return t("todos.dateInDays", { count: diff });
   return date;
 }
 
 export default function TodosPage() {
+  const { t } = useTranslation();
   const [todos, setTodos] = useState<Todo[]>([]);
   const [goals, setGoals] = useState<Goal[]>([]);
   const [filter, setFilter] = useState<FilterTab>("today");
@@ -159,13 +163,13 @@ export default function TodosPage() {
   return (
     <div>
       <div className="flex items-center justify-between mb-6">
-        <h2 className="text-2xl font-bold">Todos</h2>
+        <h2 className="text-2xl font-bold">{t("todos.title")}</h2>
         <button
           onClick={() => setShowForm(!showForm)}
           className="flex items-center gap-1 px-3 py-2 bg-primary text-primary-foreground rounded-md text-sm hover:opacity-90 transition-opacity"
         >
           <Plus size={16} />
-          Add Todo
+          {t("todos.addTodo")}
         </button>
       </div>
 
@@ -173,7 +177,7 @@ export default function TodosPage() {
         <div className="bg-destructive/10 text-destructive rounded-md p-3 mb-4 text-sm">
           {error}
           <button onClick={() => setError(null)} className="ml-2 underline">
-            dismiss
+            {t("todos.dismiss")}
           </button>
         </div>
       )}
@@ -183,7 +187,7 @@ export default function TodosPage() {
         <div className="bg-card border border-border rounded-lg p-4 mb-6 space-y-3">
           <input
             type="text"
-            placeholder="What needs to be done?"
+            placeholder={t("todos.placeholderTitle")}
             value={title}
             onChange={(e) => setTitle(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && handleCreate()}
@@ -191,7 +195,7 @@ export default function TodosPage() {
             autoFocus
           />
           <textarea
-            placeholder="Description (optional)"
+            placeholder={t("todos.placeholderDescription")}
             value={description}
             onChange={(e) => setDescription(e.target.value)}
             rows={2}
@@ -199,7 +203,7 @@ export default function TodosPage() {
           />
           <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
             <div>
-              <label className="block text-xs text-muted-foreground mb-1">Due Date</label>
+              <label className="block text-xs text-muted-foreground mb-1">{t("todos.labelDueDate")}</label>
               <input
                 type="date"
                 value={dueDate}
@@ -208,7 +212,7 @@ export default function TodosPage() {
               />
             </div>
             <div>
-              <label className="block text-xs text-muted-foreground mb-1">Reminder Time</label>
+              <label className="block text-xs text-muted-foreground mb-1">{t("todos.labelReminderTime")}</label>
               <input
                 type="time"
                 value={dueTime}
@@ -217,23 +221,23 @@ export default function TodosPage() {
               />
             </div>
             <div>
-              <label className="block text-xs text-muted-foreground mb-1">Priority</label>
+              <label className="block text-xs text-muted-foreground mb-1">{t("todos.labelPriority")}</label>
               <select
                 value={priority}
                 onChange={(e) => setPriority(e.target.value)}
                 className="w-full px-2 py-1.5 border border-border rounded-md text-sm bg-background focus:outline-none focus:ring-1 focus:ring-primary"
               >
-                <option value="low">Low</option>
-                <option value="medium">Medium</option>
-                <option value="high">High</option>
-                <option value="urgent">Urgent</option>
+                <option value="low">{t("todos.priority_low")}</option>
+                <option value="medium">{t("todos.priority_medium")}</option>
+                <option value="high">{t("todos.priority_high")}</option>
+                <option value="urgent">{t("todos.priority_urgent")}</option>
               </select>
             </div>
             <div>
-              <label className="block text-xs text-muted-foreground mb-1">Category</label>
+              <label className="block text-xs text-muted-foreground mb-1">{t("todos.labelCategory")}</label>
               <input
                 type="text"
-                placeholder="e.g. work, personal"
+                placeholder={t("todos.placeholderCategory")}
                 value={category}
                 onChange={(e) => setCategory(e.target.value)}
                 className="w-full px-2 py-1.5 border border-border rounded-md text-sm bg-background focus:outline-none focus:ring-1 focus:ring-primary"
@@ -241,7 +245,7 @@ export default function TodosPage() {
             </div>
             {goals.length > 0 && (
               <div className="col-span-2 md:col-span-4">
-                <label className="block text-xs text-muted-foreground mb-1">Link to Goal</label>
+                <label className="block text-xs text-muted-foreground mb-1">{t("todos.labelLinkToGoal")}</label>
                 <select
                   value={selectedGoalId ?? ""}
                   onChange={(e) =>
@@ -249,7 +253,7 @@ export default function TodosPage() {
                   }
                   className="w-full px-2 py-1.5 border border-border rounded-md text-sm bg-background focus:outline-none focus:ring-1 focus:ring-primary"
                 >
-                  <option value="">No goal</option>
+                  <option value="">{t("todos.noGoal")}</option>
                   {goals.map((g) => (
                     <option key={g.id} value={g.id}>
                       {g.title}
@@ -265,13 +269,13 @@ export default function TodosPage() {
               disabled={!title.trim()}
               className="px-4 py-2 bg-primary text-primary-foreground rounded-md text-sm disabled:opacity-50 hover:opacity-90 transition-opacity"
             >
-              Create Todo
+              {t("todos.createTodo")}
             </button>
             <button
               onClick={() => setShowForm(false)}
               className="px-4 py-2 border border-border rounded-md text-sm hover:bg-secondary transition-colors"
             >
-              Cancel
+              {t("todos.cancel")}
             </button>
           </div>
         </div>
@@ -282,10 +286,10 @@ export default function TodosPage() {
         <div className="flex gap-1">
           {(
             [
-              { key: "today", label: "Today" },
-              { key: "all", label: "All" },
-              { key: "overdue", label: "Overdue" },
-              { key: "completed", label: "Completed" },
+              { key: "today", label: t("todos.tabToday") },
+              { key: "all", label: t("todos.tabAll") },
+              { key: "overdue", label: t("todos.tabOverdue") },
+              { key: "completed", label: t("todos.tabCompleted") },
             ] as const
           ).map((tab) => (
             <button
@@ -310,9 +314,9 @@ export default function TodosPage() {
               setGoalFilter(e.target.value === "" ? null : Number(e.target.value))
             }
             className="ml-auto px-2 py-1.5 border border-border rounded-md text-sm bg-background focus:outline-none focus:ring-1 focus:ring-primary"
-            aria-label="Filter by goal"
+            aria-label={t("todos.filterByGoal")}
           >
-            <option value="">All goals</option>
+            <option value="">{t("todos.allGoals")}</option>
             {goals.map((g) => (
               <option key={g.id} value={g.id}>
                 {g.title}
@@ -344,7 +348,7 @@ export default function TodosPage() {
                   <button
                     onClick={() => handleComplete(todo.id)}
                     className="mt-0.5 w-5 h-5 rounded border-2 border-muted-foreground/40 hover:border-primary hover:bg-primary/10 flex items-center justify-center flex-shrink-0 transition-colors"
-                    aria-label={`Complete: ${todo.title}`}
+                    aria-label={t("todos.completeAria", { title: todo.title })}
                   >
                     <Check size={12} className="opacity-0 hover:opacity-100 text-primary" />
                   </button>
@@ -366,7 +370,7 @@ export default function TodosPage() {
                       {todo.title}
                     </span>
                     <span className={cn("text-xs px-1.5 py-0.5 rounded", pc.bg, pc.color)}>
-                      {pc.label}
+                      {t(`todos.priority_${todo.priority in priorityConfig ? todo.priority : "medium"}`)}
                     </span>
                     {todo.category && (
                       <span className="text-xs px-1.5 py-0.5 rounded bg-secondary text-secondary-foreground">
@@ -394,7 +398,7 @@ export default function TodosPage() {
                         )}
                       >
                         {overdue ? <AlertCircle size={11} /> : <Calendar size={11} />}
-                        {formatDate(todo.due_date)}
+                        {formatDate(todo.due_date, t)}
                       </span>
                     )}
                     {todo.due_time && (
@@ -405,7 +409,7 @@ export default function TodosPage() {
                     )}
                     {todo.completed_at && (
                       <span className="text-xs text-muted-foreground">
-                        Done {todo.completed_at.slice(0, 10)}
+                        {t("todos.donePrefix", { date: todo.completed_at.slice(0, 10) })}
                       </span>
                     )}
                   </div>
@@ -415,7 +419,7 @@ export default function TodosPage() {
                 <button
                   onClick={() => handleDelete(todo.id)}
                   className="text-muted-foreground hover:text-destructive transition-colors flex-shrink-0"
-                  aria-label={`Delete: ${todo.title}`}
+                  aria-label={t("todos.deleteAria", { title: todo.title })}
                 >
                   <Trash2 size={14} />
                 </button>
@@ -428,12 +432,12 @@ export default function TodosPage() {
           <ListTodo size={48} className="mx-auto mb-4 opacity-20" />
           <p className="text-sm">
             {filter === "today"
-              ? "Nothing due today. You're all caught up!"
+              ? t("todos.emptyToday")
               : filter === "overdue"
-              ? "No overdue todos. Great job staying on track!"
+              ? t("todos.emptyOverdue")
               : filter === "completed"
-              ? "No completed todos yet."
-              : "No todos yet. Add one to get started."}
+              ? t("todos.emptyCompleted")
+              : t("todos.emptyAll")}
           </p>
         </div>
       )}
@@ -446,7 +450,7 @@ export default function TodosPage() {
             className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors mb-2"
           >
             {showCompleted ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
-            {completedTodos.length} completed
+            {t("todos.completedCount", { count: completedTodos.length })}
           </button>
           {showCompleted && (
             <div className="space-y-2 opacity-60">
@@ -467,7 +471,7 @@ export default function TodosPage() {
                   <button
                     onClick={() => handleDelete(todo.id)}
                     className="text-muted-foreground hover:text-destructive transition-colors"
-                    aria-label={`Delete: ${todo.title}`}
+                    aria-label={t("todos.deleteAria", { title: todo.title })}
                   >
                     <Trash2 size={14} />
                   </button>

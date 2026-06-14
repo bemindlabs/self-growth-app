@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { ledgerApi, type LedgerEntry, type LedgerSummary } from "@/api/ledger";
 import { Plus, Trash2, TrendingUp, TrendingDown, Wallet } from "lucide-react";
 import OcrButton from "@/components/ui/OcrButton";
@@ -21,6 +22,7 @@ function formatAmount(amount: number, currency: string): string {
 }
 
 export default function Ledger() {
+  const { t } = useTranslation();
   const [entries, setEntries] = useState<LedgerEntry[]>([]);
   const [summary, setSummary] = useState<LedgerSummary | null>(null);
   const [showForm, setShowForm] = useState(false);
@@ -75,13 +77,13 @@ export default function Ledger() {
   return (
     <div>
       <div className="flex items-center justify-between mb-4">
-        <h2 className="text-2xl font-bold">Ledger</h2>
+        <h2 className="text-2xl font-bold">{t("ledger.title")}</h2>
         <button
           onClick={() => setShowForm(!showForm)}
           className="flex items-center gap-1 px-3 py-2 bg-primary text-primary-foreground rounded-md text-sm hover:opacity-90"
         >
           <Plus size={16} />
-          Add Entry
+          {t("ledger.addEntry")}
         </button>
       </div>
 
@@ -91,7 +93,7 @@ export default function Ledger() {
           <div className="bg-card border border-border rounded-lg p-3">
             <div className="flex items-center gap-2 mb-1">
               <TrendingUp size={16} className="text-success" />
-              <span className="text-xs text-muted-foreground">Income</span>
+              <span className="text-xs text-muted-foreground">{t("ledger.income")}</span>
             </div>
             <p className="text-lg font-bold text-success">
               {formatAmount(summary.total_income, summary.currency)}
@@ -100,7 +102,7 @@ export default function Ledger() {
           <div className="bg-card border border-border rounded-lg p-3">
             <div className="flex items-center gap-2 mb-1">
               <TrendingDown size={16} className="text-destructive" />
-              <span className="text-xs text-muted-foreground">Expense</span>
+              <span className="text-xs text-muted-foreground">{t("ledger.expense")}</span>
             </div>
             <p className="text-lg font-bold text-destructive">
               {formatAmount(summary.total_expense, summary.currency)}
@@ -109,7 +111,7 @@ export default function Ledger() {
           <div className="bg-card border border-border rounded-lg p-3">
             <div className="flex items-center gap-2 mb-1">
               <Wallet size={16} className="text-primary" />
-              <span className="text-xs text-muted-foreground">Balance</span>
+              <span className="text-xs text-muted-foreground">{t("ledger.balance")}</span>
             </div>
             <p className={`text-lg font-bold ${summary.balance >= 0 ? "text-success" : "text-destructive"}`}>
               {formatAmount(summary.balance, summary.currency)}
@@ -141,7 +143,7 @@ export default function Ledger() {
               !filterCat ? "bg-primary text-primary-foreground" : "bg-secondary text-secondary-foreground"
             }`}
           >
-            All
+            {t("ledger.all")}
           </button>
           {categories.map((c) => (
             <button
@@ -160,7 +162,7 @@ export default function Ledger() {
       {/* Spending by Category */}
       {summary && summary.by_category.length > 0 && (
         <div className="bg-card border border-border rounded-lg p-4 mb-4">
-          <h3 className="text-sm font-medium mb-3">Spending by Category</h3>
+          <h3 className="text-sm font-medium mb-3">{t("ledger.spendingByCategory")}</h3>
           <div className="space-y-2">
             {summary.by_category.map(([cat, amt]) => {
               const pct = summary.total_expense > 0 ? (amt / summary.total_expense) * 100 : 0;
@@ -186,14 +188,14 @@ export default function Ledger() {
           <div className="grid grid-cols-2 gap-3">
             <input
               type="text"
-              placeholder="Title"
+              placeholder={t("ledger.titlePlaceholder")}
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               className="col-span-2 px-3 py-2 border border-border rounded-md text-sm bg-background"
             />
             <input
               type="number"
-              placeholder="Amount"
+              placeholder={t("ledger.amountPlaceholder")}
               value={amount}
               onChange={(e) => setAmount(e.target.value)}
               min="0"
@@ -211,8 +213,8 @@ export default function Ledger() {
               onChange={(e) => setEntryType(e.target.value)}
               className="px-3 py-2 border border-border rounded-md text-sm bg-background"
             >
-              <option value="expense">Expense</option>
-              <option value="income">Income</option>
+              <option value="expense">{t("ledger.expense")}</option>
+              <option value="income">{t("ledger.income")}</option>
             </select>
             <select
               value={category}
@@ -226,7 +228,7 @@ export default function Ledger() {
           </div>
           <div className="flex items-center gap-2">
             <textarea
-              placeholder="Description (optional)"
+              placeholder={t("ledger.descriptionPlaceholder")}
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               className="flex-1 px-3 py-2 border border-border rounded-md text-sm bg-background"
@@ -234,16 +236,16 @@ export default function Ledger() {
             />
             <OcrButton
               mode="receipt"
-              label="Scan Receipt"
+              label={t("ledger.scanReceipt")}
               onResult={(text) => setDescription((prev) => prev ? prev + "\n" + text : text)}
             />
           </div>
           <div className="flex gap-2">
             <button onClick={handleCreate} className="px-4 py-2 bg-primary text-primary-foreground rounded-md text-sm">
-              Add
+              {t("ledger.add")}
             </button>
             <button onClick={() => setShowForm(false)} className="px-4 py-2 bg-secondary text-secondary-foreground rounded-md text-sm">
-              Cancel
+              {t("ledger.cancel")}
             </button>
           </div>
         </div>
@@ -253,7 +255,7 @@ export default function Ledger() {
       {entries.length === 0 ? (
         <div className="text-center py-12 text-muted-foreground">
           <Wallet size={48} className="mx-auto mb-4 opacity-20" />
-          <p className="text-sm">No ledger entries yet. Start tracking your self-development spending.</p>
+          <p className="text-sm">{t("ledger.emptyState")}</p>
         </div>
       ) : (
         <div className="space-y-2">

@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { ragApi, type SearchResult } from "@/api/rag";
 import { Search as SearchIcon, RefreshCw, BookOpen, Target, RotateCcw, Heart, ListTodo } from "lucide-react";
 
@@ -16,6 +17,7 @@ export default function SearchPage() {
   const [loading, setLoading] = useState(false);
   const [rebuilding, setRebuilding] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const { t } = useTranslation();
 
   const handleSearch = async () => {
     if (!query.trim()) return;
@@ -37,7 +39,7 @@ export default function SearchPage() {
     try {
       const count = await ragApi.rebuildEmbeddings();
       setError(null);
-      alert(`Rebuilt ${count} embeddings.`);
+      alert(t("search.rebuiltAlert", { count }));
     } catch (e) {
       setError(String(e));
     } finally {
@@ -48,14 +50,14 @@ export default function SearchPage() {
   return (
     <div>
       <div className="flex items-center justify-between mb-6">
-        <h2 className="text-2xl font-bold">Smart Search</h2>
+        <h2 className="text-2xl font-bold">{t("search.title")}</h2>
         <button
           onClick={handleRebuild}
           disabled={rebuilding}
           className="flex items-center gap-1 px-3 py-2 bg-secondary text-secondary-foreground rounded-md text-sm hover:opacity-90 disabled:opacity-50"
         >
           <RefreshCw size={14} className={rebuilding ? "animate-spin" : ""} />
-          Rebuild Index
+          {t("search.rebuildIndex")}
         </button>
       </div>
 
@@ -64,7 +66,7 @@ export default function SearchPage() {
           <SearchIcon size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
           <input
             type="text"
-            placeholder="Search your learning, skills, routines..."
+            placeholder={t("search.searchPlaceholder")}
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && handleSearch()}
@@ -76,7 +78,7 @@ export default function SearchPage() {
           disabled={loading}
           className="px-4 py-2 bg-primary text-primary-foreground rounded-md text-sm disabled:opacity-50"
         >
-          {loading ? "..." : "Search"}
+          {loading ? "..." : t("search.searchButton")}
         </button>
       </div>
 
@@ -104,7 +106,7 @@ export default function SearchPage() {
                         {result.source_table.replace("_", " ")}
                       </span>
                       <span className="text-xs text-muted-foreground">
-                        {(result.score * 100).toFixed(0)}% match
+                        {t("search.percentMatch", { percent: (result.score * 100).toFixed(0) })}
                       </span>
                     </div>
                   </div>
@@ -117,14 +119,14 @@ export default function SearchPage() {
 
       {results.length === 0 && query && !loading && !error && (
         <p className="text-muted-foreground text-sm text-center py-8">
-          No results found. Try rebuilding the index first.
+          {t("search.noResults")}
         </p>
       )}
 
       {!query && (
         <div className="text-center py-12 text-muted-foreground">
           <SearchIcon size={48} className="mx-auto mb-4 opacity-20" />
-          <p className="text-sm">Search across all your learning items, skills, and routines using AI-powered semantic search.</p>
+          <p className="text-sm">{t("search.emptyHint")}</p>
         </div>
       )}
     </div>

@@ -1,8 +1,10 @@
 import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { routinesApi, type Routine } from "@/api/routines";
 import { Plus, Check, Trash2 } from "lucide-react";
 
 export default function Routines() {
+  const { t } = useTranslation();
   const [routines, setRoutines] = useState<Routine[]>([]);
   const [showForm, setShowForm] = useState(false);
   const [name, setName] = useState("");
@@ -42,13 +44,13 @@ export default function Routines() {
   return (
     <div>
       <div className="flex items-center justify-between mb-6">
-        <h2 className="text-2xl font-bold">Routines</h2>
+        <h2 className="text-2xl font-bold">{t("routines.title")}</h2>
         <button
           onClick={() => setShowForm(!showForm)}
           className="flex items-center gap-1 px-3 py-2 bg-primary text-primary-foreground rounded-md text-sm hover:opacity-90"
         >
           <Plus size={16} />
-          Add Routine
+          {t("routines.addRoutine")}
         </button>
       </div>
 
@@ -56,13 +58,13 @@ export default function Routines() {
         <div className="bg-card border border-border rounded-lg p-4 mb-4 space-y-3">
           <input
             type="text"
-            placeholder="Routine name"
+            placeholder={t("routines.namePlaceholder")}
             value={name}
             onChange={(e) => setName(e.target.value)}
             className="w-full px-3 py-2 border border-border rounded-md text-sm bg-background"
           />
           <textarea
-            placeholder="Description (optional)"
+            placeholder={t("routines.descriptionPlaceholder")}
             value={description}
             onChange={(e) => setDescription(e.target.value)}
             className="w-full px-3 py-2 border border-border rounded-md text-sm bg-background"
@@ -73,29 +75,29 @@ export default function Routines() {
             onChange={(e) => setFrequency(e.target.value)}
             className="w-full px-3 py-2 border border-border rounded-md text-sm bg-background"
           >
-            <option value="daily">Daily</option>
-            <option value="weekly">Weekly</option>
-            <option value="custom">Custom</option>
+            <option value="daily">{t("routines.daily")}</option>
+            <option value="weekly">{t("routines.weekly")}</option>
+            <option value="custom">{t("routines.custom")}</option>
           </select>
           <div className="flex gap-2">
             <button
               onClick={handleCreate}
               className="px-4 py-2 bg-primary text-primary-foreground rounded-md text-sm"
             >
-              Create
+              {t("routines.create")}
             </button>
             <button
               onClick={() => setShowForm(false)}
               className="px-4 py-2 bg-secondary text-secondary-foreground rounded-md text-sm"
             >
-              Cancel
+              {t("routines.cancel")}
             </button>
           </div>
         </div>
       )}
 
       {routines.length === 0 ? (
-        <p className="text-muted-foreground text-sm">No routines yet. Create one to get started.</p>
+        <p className="text-muted-foreground text-sm">{t("routines.emptyState")}</p>
       ) : (
         <div className="space-y-3">
           {routines.map((routine) => (
@@ -116,14 +118,14 @@ export default function Routines() {
                 <button
                   onClick={() => handleComplete(routine.id)}
                   className="p-2 text-success hover:bg-secondary rounded-md"
-                  title="Mark complete"
+                  title={t("routines.markComplete")}
                 >
                   <Check size={18} />
                 </button>
                 <button
                   onClick={() => handleDelete(routine.id)}
                   className="p-2 text-destructive hover:bg-secondary rounded-md"
-                  title="Delete"
+                  title={t("routines.delete")}
                 >
                   <Trash2 size={18} />
                 </button>

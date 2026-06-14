@@ -16,10 +16,21 @@ function initialLanguage(): Language {
   return "en";
 }
 
+// Auto-load per-page translation modules. Each file under locales/pages/*.ts
+// exports `en` and `th`, already namespaced, e.g.
+//   export const en = { dashboard: { title: "Dashboard" } };
+//   export const th = { dashboard: { title: "แดชบอร์ด" } };
+const pageModules = import.meta.glob("./locales/pages/*.ts", {
+  eager: true,
+}) as Record<string, { en?: Record<string, unknown>; th?: Record<string, unknown> }>;
+
+const pagesEn = Object.assign({}, ...Object.values(pageModules).map((m) => m.en ?? {}));
+const pagesTh = Object.assign({}, ...Object.values(pageModules).map((m) => m.th ?? {}));
+
 i18n.use(initReactI18next).init({
   resources: {
-    en: { translation: en },
-    th: { translation: th },
+    en: { translation: { ...en, ...pagesEn } },
+    th: { translation: { ...th, ...pagesTh } },
   },
   lng: initialLanguage(),
   fallbackLng: "en",

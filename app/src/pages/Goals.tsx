@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { goalsApi, type Goal } from "@/api/goals";
 import { Plus, Trash2, Trophy } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -10,6 +11,7 @@ const statusColors: Record<string, string> = {
 };
 
 export default function Goals() {
+  const { t } = useTranslation();
   const [goals, setGoals] = useState<Goal[]>([]);
   const [showForm, setShowForm] = useState(false);
   const [title, setTitle] = useState("");
@@ -50,13 +52,13 @@ export default function Goals() {
   return (
     <div>
       <div className="flex items-center justify-between mb-4">
-        <h2 className="text-2xl font-bold">Goals</h2>
+        <h2 className="text-2xl font-bold">{t("goals.title")}</h2>
         <button
           onClick={() => setShowForm(!showForm)}
           className="flex items-center gap-1 px-3 py-2 bg-primary text-primary-foreground rounded-md text-sm hover:opacity-90 transition-opacity"
         >
           <Plus size={16} />
-          Add Goal
+          {t("goals.addGoal")}
         </button>
       </div>
 
@@ -72,7 +74,7 @@ export default function Goals() {
                 : "bg-secondary text-secondary-foreground hover:bg-secondary/80"
             )}
           >
-            {s ?? "All"}
+            {s ? t(`goals.filter_${s}`) : t("goals.filterAll")}
           </button>
         ))}
       </div>
@@ -80,19 +82,19 @@ export default function Goals() {
       {showForm && (
         <div className="bg-card border border-border rounded-lg p-4 mb-4 space-y-3">
           <div>
-            <label className="block text-xs text-muted-foreground mb-1">Title</label>
+            <label className="block text-xs text-muted-foreground mb-1">{t("goals.labelTitle")}</label>
             <input
               type="text"
-              placeholder="Goal title"
+              placeholder={t("goals.placeholderTitle")}
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               className="w-full px-3 py-2 border border-border rounded-md text-sm bg-background focus:outline-none focus:ring-1 focus:ring-primary"
             />
           </div>
           <div>
-            <label className="block text-xs text-muted-foreground mb-1">Description</label>
+            <label className="block text-xs text-muted-foreground mb-1">{t("goals.labelDescription")}</label>
             <textarea
-              placeholder="Description (optional)"
+              placeholder={t("goals.placeholderDescription")}
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               className="w-full px-3 py-2 border border-border rounded-md text-sm bg-background focus:outline-none focus:ring-1 focus:ring-primary"
@@ -100,7 +102,7 @@ export default function Goals() {
             />
           </div>
           <div>
-            <label className="block text-xs text-muted-foreground mb-1">Target Date</label>
+            <label className="block text-xs text-muted-foreground mb-1">{t("goals.labelTargetDate")}</label>
             <input
               type="date"
               value={targetDate}
@@ -110,10 +112,10 @@ export default function Goals() {
           </div>
           <div className="flex gap-2">
             <button onClick={handleCreate} className="px-4 py-2 bg-primary text-primary-foreground rounded-md text-sm hover:opacity-90 transition-opacity">
-              Create
+              {t("goals.create")}
             </button>
             <button onClick={() => setShowForm(false)} className="px-4 py-2 border border-border rounded-md text-sm hover:bg-secondary transition-colors">
-              Cancel
+              {t("goals.cancel")}
             </button>
           </div>
         </div>
@@ -122,7 +124,7 @@ export default function Goals() {
       {goals.length === 0 ? (
         <div className="text-center py-12 text-muted-foreground">
           <Trophy size={48} className="mx-auto mb-4 opacity-20" />
-          <p className="text-sm">No goals yet. Add one to get started.</p>
+          <p className="text-sm">{t("goals.emptyState")}</p>
         </div>
       ) : (
         <div className="space-y-3">
@@ -144,14 +146,14 @@ export default function Goals() {
                           "px-2 py-0.5 rounded text-xs border-0",
                           statusColors[goal.status] || ""
                         )}
-                        aria-label={`Status for: ${goal.title}`}
+                        aria-label={t("goals.statusFor", { title: goal.title })}
                       >
-                        <option value="active">Active</option>
-                        <option value="completed">Completed</option>
-                        <option value="paused">Paused</option>
+                        <option value="active">{t("goals.status_active")}</option>
+                        <option value="completed">{t("goals.status_completed")}</option>
+                        <option value="paused">{t("goals.status_paused")}</option>
                       </select>
                       {goal.target_date && (
-                        <span className="text-xs text-muted-foreground">Target: {goal.target_date}</span>
+                        <span className="text-xs text-muted-foreground">{t("goals.targetPrefix", { date: goal.target_date })}</span>
                       )}
                     </div>
                   </div>
@@ -159,7 +161,7 @@ export default function Goals() {
                 <button
                   onClick={() => handleDelete(goal.id)}
                   className="p-2 text-destructive hover:bg-secondary rounded-md transition-colors"
-                  aria-label={`Delete: ${goal.title}`}
+                  aria-label={t("goals.deleteAria", { title: goal.title })}
                 >
                   <Trash2 size={16} />
                 </button>

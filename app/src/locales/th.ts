@@ -68,12 +68,4 @@ export const th: Translation = {
       title: "เกี่ยวกับ",
     },
   },
-  dashboard: {
-    title: "แดชบอร์ด",
-    healthSnapshot: "ภาพรวมสุขภาพ",
-    wheelOfLife: "วงล้อแห่งชีวิต",
-    quickCoach: "โค้ชด่วน",
-    insights: "อินไซต์",
-    weeklySummary: "สรุปรายสัปดาห์",
-  },
 };
