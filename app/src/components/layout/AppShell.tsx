@@ -21,24 +21,25 @@ import {
 import { cn } from "@/lib/utils";
 import { Logo } from "../ui/Logo";
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 
 const navItems = [
-  { to: "/", icon: LayoutDashboard, label: "Dashboard" },
-  { to: "/goals", icon: Trophy, label: "Goals" },
-  { to: "/todos", icon: ListTodo, label: "Todos" },
-  { to: "/habits", icon: CheckSquare, label: "Habits" },
-  { to: "/routines", icon: RotateCcw, label: "Routines" },
-  { to: "/health", icon: Heart, label: "Health" },
-  { to: "/checkups", icon: ClipboardList, label: "Checkups" },
-  { to: "/skills", icon: Target, label: "Skills" },
-  { to: "/learning", icon: BookOpen, label: "Learning" },
-  { to: "/journal", icon: PenLine, label: "Journal" },
-  { to: "/chat", icon: MessageCircle, label: "Chat" },
-  { to: "/stories", icon: Sparkles, label: "Stories" },
-  { to: "/ledger", icon: Wallet, label: "Ledger" },
-  { to: "/search", icon: Search, label: "Search" },
-  { to: "/settings", icon: Settings, label: "Settings" },
-  { to: "/get-started", icon: HelpCircle, label: "Get Started" },
+  { to: "/", icon: LayoutDashboard, labelKey: "nav.dashboard" },
+  { to: "/goals", icon: Trophy, labelKey: "nav.goals" },
+  { to: "/todos", icon: ListTodo, labelKey: "nav.todos" },
+  { to: "/habits", icon: CheckSquare, labelKey: "nav.habits" },
+  { to: "/routines", icon: RotateCcw, labelKey: "nav.routines" },
+  { to: "/health", icon: Heart, labelKey: "nav.health" },
+  { to: "/checkups", icon: ClipboardList, labelKey: "nav.checkups" },
+  { to: "/skills", icon: Target, labelKey: "nav.skills" },
+  { to: "/learning", icon: BookOpen, labelKey: "nav.learning" },
+  { to: "/journal", icon: PenLine, labelKey: "nav.journal" },
+  { to: "/chat", icon: MessageCircle, labelKey: "nav.chat" },
+  { to: "/stories", icon: Sparkles, labelKey: "nav.stories" },
+  { to: "/ledger", icon: Wallet, labelKey: "nav.ledger" },
+  { to: "/search", icon: Search, labelKey: "nav.search" },
+  { to: "/settings", icon: Settings, labelKey: "nav.settings" },
+  { to: "/get-started", icon: HelpCircle, labelKey: "nav.getStarted" },
 ];
 
 const mobileNavItems = navItems.slice(0, 5);
@@ -46,6 +47,7 @@ const mobileOverflowItems = navItems.slice(5);
 
 export default function AppShell() {
   const [moreOpen, setMoreOpen] = useState(false);
+  const { t } = useTranslation();
 
   return (
     <div className="flex h-screen safe-area-x">
@@ -53,7 +55,7 @@ export default function AppShell() {
       <aside className="hidden md:flex w-64 flex-col border-r border-border bg-card safe-area-top">
         <div className="p-4 border-b border-border">
           <Logo />
-          <p className="text-[10px] text-muted-foreground mt-1 px-1">Self Development Platform</p>
+          <p className="text-[10px] text-muted-foreground mt-1 px-1">{t("shell.tagline")}</p>
         </div>
         <nav className="flex-1 overflow-y-auto p-2 space-y-1">
           {navItems.map((item) => (
@@ -71,7 +73,7 @@ export default function AppShell() {
               }
             >
               <item.icon size={18} />
-              {item.label}
+              {t(item.labelKey)}
             </NavLink>
           ))}
         </nav>
@@ -84,7 +86,7 @@ export default function AppShell() {
         </div>
         <footer className="hidden md:block border-t border-border bg-card px-4 py-2 text-center safe-area-bottom">
           <p className="text-[11px] text-muted-foreground">
-            Powered by Bemind Technology Co.,Ltd. (Bemindlabs) &middot; v{__APP_VERSION__}
+            {t("shell.poweredBy")} &middot; v{__APP_VERSION__}
           </p>
         </footer>
       </main>
@@ -105,7 +107,7 @@ export default function AppShell() {
               }
             >
               <item.icon size={20} />
-              <span>{item.label}</span>
+              <span>{t(item.labelKey)}</span>
             </NavLink>
           ))}
           {/* More menu */}
@@ -118,7 +120,7 @@ export default function AppShell() {
             aria-label="More navigation items"
           >
             <MoreHorizontal size={20} />
-            <span>More</span>
+            <span>{t("nav.more")}</span>
           </button>
         </div>
 
@@ -146,7 +148,7 @@ export default function AppShell() {
                     }
                   >
                     <item.icon size={20} />
-                    <span>{item.label}</span>
+                    <span>{t(item.labelKey)}</span>
                   </NavLink>
                 ))}
               </div>
