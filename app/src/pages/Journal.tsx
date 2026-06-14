@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { journalApi, type JournalEntry } from "@/api/journal";
 import { Plus, Trash2, PenLine, ChevronDown, ChevronUp } from "lucide-react";
 import Markdown from "@/components/ui/Markdown";
@@ -14,6 +15,7 @@ export default function Journal() {
   const [content, setContent] = useState("");
   const [mood, setMood] = useState("");
   const [expanded, setExpanded] = useState<number | null>(null);
+  const { t } = useTranslation();
 
   const loadEntries = () => {
     journalApi.list().then(setEntries).catch(console.error);
@@ -48,13 +50,13 @@ export default function Journal() {
   return (
     <div>
       <div className="flex items-center justify-between mb-4">
-        <h2 className="text-2xl font-bold">Journal</h2>
+        <h2 className="text-2xl font-bold">{t("journal.title")}</h2>
         <button
           onClick={() => setShowForm(!showForm)}
           className="flex items-center gap-1 px-3 py-2 bg-primary text-primary-foreground rounded-md text-sm hover:opacity-90"
         >
           <Plus size={16} />
-          New Entry
+          {t("journal.newEntry")}
         </button>
       </div>
 
@@ -62,21 +64,21 @@ export default function Journal() {
         <div className="bg-card border border-border rounded-lg p-4 mb-4 space-y-3">
           <input
             type="text"
-            placeholder="Title (optional)"
+            placeholder={t("journal.titlePlaceholder")}
             value={title}
             onChange={(e) => setTitle(e.target.value)}
             className="w-full px-3 py-2 border border-border rounded-md text-sm bg-background"
           />
           <div>
             <div className="flex items-center justify-between mb-1">
-              <label className="text-xs text-muted-foreground">Content</label>
+              <label className="text-xs text-muted-foreground">{t("journal.contentLabel")}</label>
               <OcrButton
-                label="Scan Handwriting"
+                label={t("journal.scanHandwriting")}
                 onResult={(text) => setContent((prev) => prev ? prev + "\n\n" + text : text)}
               />
             </div>
             <textarea
-              placeholder="What's on your mind?"
+              placeholder={t("journal.contentPlaceholder")}
               value={content}
               onChange={(e) => setContent(e.target.value)}
               className="w-full px-3 py-2 border border-border rounded-md text-sm bg-background"
@@ -84,7 +86,7 @@ export default function Journal() {
             />
           </div>
           <div>
-            <label className="block text-xs text-muted-foreground mb-1">Mood</label>
+            <label className="block text-xs text-muted-foreground mb-1">{t("journal.moodLabel")}</label>
             <div className="flex gap-2">
               {moods.filter(Boolean).map((m) => (
                 <button
@@ -101,10 +103,10 @@ export default function Journal() {
           </div>
           <div className="flex gap-2">
             <button onClick={handleCreate} className="px-4 py-2 bg-primary text-primary-foreground rounded-md text-sm">
-              Save Entry
+              {t("journal.saveEntry")}
             </button>
             <button onClick={() => setShowForm(false)} className="px-4 py-2 bg-secondary text-secondary-foreground rounded-md text-sm">
-              Cancel
+              {t("journal.cancel")}
             </button>
           </div>
         </div>
@@ -113,7 +115,7 @@ export default function Journal() {
       {entries.length === 0 ? (
         <div className="text-center py-12 text-muted-foreground">
           <PenLine size={48} className="mx-auto mb-4 opacity-20" />
-          <p className="text-sm">Start writing your first journal entry.</p>
+          <p className="text-sm">{t("journal.empty")}</p>
         </div>
       ) : (
         <div className="space-y-3">

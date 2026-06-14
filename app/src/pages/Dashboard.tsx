@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import {
   progressApi,
   type DashboardStats,
@@ -58,16 +59,18 @@ function formatHealthValue(type: string, value: number): string {
   return Math.round(value).toLocaleString();
 }
 
-function formatDate(date: string | null): string {
+type TFunc = (key: string, opts?: Record<string, unknown>) => string;
+
+function formatDate(date: string | null, t: TFunc): string {
   if (!date) return "";
   const d = new Date(date + "T00:00:00");
   const today = new Date();
   today.setHours(0, 0, 0, 0);
   const diff = Math.round((d.getTime() - today.getTime()) / 86400000);
-  if (diff === 0) return "Today";
-  if (diff === 1) return "Tomorrow";
-  if (diff < 0) return `${Math.abs(diff)}d overdue`;
-  if (diff <= 7) return `In ${diff}d`;
+  if (diff === 0) return t("dashboard.dateToday");
+  if (diff === 1) return t("dashboard.dateTomorrow");
+  if (diff < 0) return t("dashboard.dateOverdue", { count: Math.abs(diff) });
+  if (diff <= 7) return t("dashboard.dateInDays", { count: diff });
   return date;
 }
 
@@ -79,6 +82,7 @@ const priorityColors: Record<string, string> = {
 };
 
 export default function Dashboard() {
+  const { t } = useTranslation();
   const [stats, setStats] = useState<DashboardStats | null>(null);
   const [lifeBalance, setLifeBalance] = useState<LifeBalanceDomain[]>([]);
   const [moodCorrelations, setMoodCorrelations] = useState<MoodHabitCorrelation[] | null>(null);
@@ -201,7 +205,7 @@ export default function Dashboard() {
   }
 
   if (!stats) {
-    return <div className="text-muted-foreground">Loading...</div>;
+    return <div className="text-muted-foreground">{t("dashboard.loading")}</div>;
   }
 
   const overdueTodos = todayTodos.filter(
@@ -209,12 +213,12 @@ export default function Dashboard() {
   );
 
   const cards = [
-    { label: "Streak", value: `${stats.current_streak}d`, icon: Flame, color: "text-warning" },
-    { label: "Today", value: stats.completions_today, icon: CheckCircle, color: "text-success" },
-    { label: "Goals", value: stats.active_goals, icon: Trophy, color: "text-warning" },
-    { label: "Todos", value: todayTodos.length, icon: ListTodo, color: "text-accent" },
-    { label: "Routines", value: stats.active_routines, icon: RotateCcw, color: "text-primary" },
-    { label: "Skills", value: stats.total_skills, icon: Target, color: "text-info" },
+    { label: t("dashboard.cardStreak"), value: `${stats.current_streak}d`, icon: Flame, color: "text-warning" },
+    { label: t("dashboard.cardToday"), value: stats.completions_today, icon: CheckCircle, color: "text-success" },
+    { label: t("dashboard.cardGoals"), value: stats.active_goals, icon: Trophy, color: "text-warning" },
+    { label: t("dashboard.cardTodos"), value: todayTodos.length, icon: ListTodo, color: "text-accent" },
+    { label: t("dashboard.cardRoutines"), value: stats.active_routines, icon: RotateCcw, color: "text-primary" },
+    { label: t("dashboard.cardSkills"), value: stats.total_skills, icon: Target, color: "text-info" },
   ];
 
   // Pick top health highlights (max 4)
@@ -222,7 +226,7 @@ export default function Dashboard() {
 
   return (
     <div>
-      <h2 className="text-2xl font-bold mb-6">Dashboard</h2>
+      <h2 className="text-2xl font-bold mb-6">{t("dashboard.title")}</h2>
 
       {/* Stats Grid */}
       <div className="grid grid-cols-3 md:grid-cols-6 gap-3">
@@ -248,11 +252,11 @@ export default function Dashboard() {
         <div className="bg-card rounded-lg border border-border p-4">
           <div className="flex items-center gap-2 mb-3">
             <ListTodo size={16} className="text-accent" />
-            <h3 className="font-semibold text-sm">Today's Todos</h3>
+            <h3 className="font-semibold text-sm">{t("dashboard.todaysTodos")}</h3>
             {overdueTodos.length > 0 && (
               <span className="ml-auto flex items-center gap-1 text-xs text-destructive">
                 <AlertCircle size={12} />
-                {overdueTodos.length} overdue
+                {t("dashboard.overdueCount", { count: overdueTodos.length })}
               </span>
             )}
           </div>
@@ -268,7 +272,7 @@ export default function Dashboard() {
                     <button
                       onClick={() => handleCompleteTodo(todo.id)}
                       className="w-4 h-4 rounded border border-muted-foreground/40 hover:border-primary hover:bg-primary/10 flex items-center justify-center flex-shrink-0 transition-colors"
-                      aria-label={`Complete: ${todo.title}`}
+                      aria-label={t("dashboard.completeAria", { title: todo.title })}
                     >
                       <Check size={10} className="opacity-0 group-hover:opacity-100 text-primary" />
                     </button>
@@ -280,7 +284,7 @@ export default function Dashboard() {
                           overdue ? "text-destructive" : "text-muted-foreground"
                         )}
                       >
-                        {formatDate(todo.due_date)}
+                        {formatDate(todo.due_date, t)}
                       </span>
                     )}
                     <span className={cn("text-[10px]", priorityColors[todo.priority] || "")}>
@@ -291,13 +295,13 @@ export default function Dashboard() {
               })}
               {todayTodos.length > 8 && (
                 <p className="text-xs text-muted-foreground text-center pt-1">
-                  +{todayTodos.length - 8} more
+                  {t("dashboard.moreCount", { count: todayTodos.length - 8 })}
                 </p>
               )}
             </div>
           ) : (
             <p className="text-xs text-muted-foreground py-3 text-center">
-              All caught up! No todos due today.
+              {t("dashboard.todosEmpty")}
             </p>
           )}
         </div>
@@ -306,10 +310,13 @@ export default function Dashboard() {
         <div className="bg-card rounded-lg border border-border p-4">
           <div className="flex items-center gap-2 mb-3">
             <CheckCircle size={16} className="text-success" />
-            <h3 className="font-semibold text-sm">Today's Habits</h3>
+            <h3 className="font-semibold text-sm">{t("dashboard.todaysHabits")}</h3>
             {habits.length > 0 && (
               <span className="ml-auto text-xs text-muted-foreground">
-                {habits.filter((h) => habitLogs.get(h.id)?.has(today)).length}/{habits.length} done
+                {t("dashboard.habitsDone", {
+                  done: habits.filter((h) => habitLogs.get(h.id)?.has(today)).length,
+                  total: habits.length,
+                })}
               </span>
             )}
           </div>
@@ -327,7 +334,9 @@ export default function Dashboard() {
                           ? "border-success bg-success"
                           : "border-muted-foreground/40 hover:border-success"
                       )}
-                      aria-label={`${done ? "Uncheck" : "Check"}: ${habit.name}`}
+                      aria-label={done
+                        ? t("dashboard.uncheckAria", { name: habit.name })
+                        : t("dashboard.checkAria", { name: habit.name })}
                     >
                       {done && <Check size={10} className="text-white" />}
                     </button>
@@ -345,7 +354,7 @@ export default function Dashboard() {
             </div>
           ) : (
             <p className="text-xs text-muted-foreground py-3 text-center">
-              No habits yet. Create one to start tracking.
+              {t("dashboard.habitsEmpty")}
             </p>
           )}
         </div>
@@ -356,7 +365,7 @@ export default function Dashboard() {
         <div className="mt-4 bg-card rounded-lg border border-border p-4">
           <div className="flex items-center gap-2 mb-3">
             <Heart size={16} className="text-destructive" />
-            <h3 className="font-semibold text-sm">Health Snapshot</h3>
+            <h3 className="font-semibold text-sm">{t("dashboard.healthSnapshot")}</h3>
           </div>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
             {healthHighlights.map((h) => {
@@ -391,9 +400,9 @@ export default function Dashboard() {
       {/* Life Balance Radar Chart */}
       {lifeBalance.length > 0 && (
         <div className="mt-4 bg-card rounded-lg border border-border p-4">
-          <h3 className="font-semibold text-sm mb-1">Wheel of Life</h3>
+          <h3 className="font-semibold text-sm mb-1">{t("dashboard.wheelOfLife")}</h3>
           <p className="text-[10px] text-muted-foreground mb-3">
-            Engagement score per life domain over the last 30 days (0–100).
+            {t("dashboard.wheelOfLifeDesc")}
           </p>
           <ResponsiveContainer width="100%" height={280}>
             <RadarChart data={lifeBalance} margin={{ top: 10, right: 20, bottom: 10, left: 20 }}>
@@ -409,7 +418,7 @@ export default function Dashboard() {
                 tickCount={4}
               />
               <Radar
-                name="Score"
+                name={t("dashboard.scoreLabel")}
                 dataKey="score"
                 stroke="var(--primary)"
                 fill="var(--primary)"
@@ -424,7 +433,7 @@ export default function Dashboard() {
                   fontSize: "12px",
                   color: "var(--foreground)",
                 }}
-                formatter={(value) => [`${Math.round(Number(value))}`, "Score"]}
+                formatter={(value) => [`${Math.round(Number(value))}`, t("dashboard.scoreLabel")]}
               />
             </RadarChart>
           </ResponsiveContainer>
@@ -435,17 +444,16 @@ export default function Dashboard() {
       <div className="mt-4 bg-card rounded-lg border border-border p-4">
         <div className="flex items-center gap-2 mb-1">
           <TrendingUp size={16} className="text-primary" />
-          <h3 className="font-semibold text-sm">Mood-Habit Insights</h3>
+          <h3 className="font-semibold text-sm">{t("dashboard.moodHabitInsights")}</h3>
         </div>
         <p className="text-[10px] text-muted-foreground mb-3">
-          Habits ranked by their impact on your mood (avg. mood rating on days completed vs. not).
+          {t("dashboard.moodHabitDesc")}
         </p>
         {moodCorrelations === null ? (
-          <p className="text-xs text-muted-foreground py-3 text-center">Loading...</p>
+          <p className="text-xs text-muted-foreground py-3 text-center">{t("dashboard.loading")}</p>
         ) : moodCorrelations.length === 0 ? (
           <p className="text-xs text-muted-foreground py-3 text-center">
-            Log more journal entries with mood ratings to see correlations. At least 14 mood-rated
-            entries and 7 habit completion days are required per habit.
+            {t("dashboard.moodHabitInsufficient")}
           </p>
         ) : (
           <div className="space-y-4">
@@ -486,8 +494,8 @@ export default function Dashboard() {
               <BarChart
                 data={moodCorrelations.map((c) => ({
                   name: c.habit_name.length > 12 ? c.habit_name.slice(0, 12) + "…" : c.habit_name,
-                  "With habit": Number(c.avg_mood_with.toFixed(2)),
-                  "Without habit": Number(c.avg_mood_without.toFixed(2)),
+                  [t("dashboard.withHabit")]: Number(c.avg_mood_with.toFixed(2)),
+                  [t("dashboard.withoutHabit")]: Number(c.avg_mood_without.toFixed(2)),
                   color: c.habit_color,
                 }))}
                 margin={{ top: 4, right: 8, bottom: 4, left: -16 }}
@@ -518,12 +526,12 @@ export default function Dashboard() {
                 <Legend
                   wrapperStyle={{ fontSize: "11px", color: "var(--muted-foreground)" }}
                 />
-                <Bar dataKey="With habit" radius={[3, 3, 0, 0]}>
+                <Bar dataKey={t("dashboard.withHabit")} radius={[3, 3, 0, 0]}>
                   {moodCorrelations.map((c) => (
                     <Cell key={c.habit_name} fill={c.habit_color} fillOpacity={0.85} />
                   ))}
                 </Bar>
-                <Bar dataKey="Without habit" radius={[3, 3, 0, 0]} fill="var(--muted-foreground)" fillOpacity={0.35} />
+                <Bar dataKey={t("dashboard.withoutHabit")} radius={[3, 3, 0, 0]} fill="var(--muted-foreground)" fillOpacity={0.35} />
               </BarChart>
             </ResponsiveContainer>
           </div>
@@ -532,14 +540,14 @@ export default function Dashboard() {
 
       {/* Quick Coach */}
       <div className="mt-4 bg-card rounded-lg border border-border p-4">
-        <h3 className="font-semibold text-sm mb-3">Quick Coach</h3>
+        <h3 className="font-semibold text-sm mb-3">{t("dashboard.quickCoach")}</h3>
         <div className="flex gap-2">
           <input
             type="text"
             value={coachQuestion}
             onChange={(e) => setCoachQuestion(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && handleAskCoach()}
-            placeholder="Ask your coach anything..."
+            placeholder={t("dashboard.coachPlaceholder")}
             className="flex-1 bg-secondary text-sm rounded-md border border-border px-3 py-2 placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary"
           />
           <button
@@ -547,7 +555,7 @@ export default function Dashboard() {
             disabled={coachLoading || !coachQuestion.trim()}
             className="bg-primary text-primary-foreground text-sm font-medium rounded-md px-4 py-2 disabled:opacity-50 disabled:cursor-not-allowed hover:opacity-90 transition-opacity"
           >
-            {coachLoading ? "..." : "Ask"}
+            {coachLoading ? "..." : t("dashboard.ask")}
           </button>
         </div>
         {coachError && (
@@ -568,9 +576,9 @@ export default function Dashboard() {
         <div className="bg-card rounded-lg border border-border p-4">
           <div className="flex items-center justify-between mb-3">
             <div>
-              <h3 className="font-semibold text-sm">Insights</h3>
+              <h3 className="font-semibold text-sm">{t("dashboard.insights")}</h3>
               <p className="text-[10px] text-muted-foreground mt-0.5">
-                AI-generated observations from your data.
+                {t("dashboard.insightsDesc")}
               </p>
             </div>
             <button
@@ -578,7 +586,7 @@ export default function Dashboard() {
               disabled={insightsLoading}
               className="bg-primary text-primary-foreground text-xs font-medium rounded-md px-3 py-1.5 disabled:opacity-50 hover:opacity-90 transition-opacity"
             >
-              {insightsLoading ? "..." : "Generate"}
+              {insightsLoading ? "..." : t("dashboard.generate")}
             </button>
           </div>
           {insightsError && (
@@ -597,9 +605,9 @@ export default function Dashboard() {
         <div className="bg-card rounded-lg border border-border p-4">
           <div className="flex items-center justify-between mb-3">
             <div>
-              <h3 className="font-semibold text-sm">Weekly Summary</h3>
+              <h3 className="font-semibold text-sm">{t("dashboard.weeklySummary")}</h3>
               <p className="text-[10px] text-muted-foreground mt-0.5">
-                Recap of your past week.
+                {t("dashboard.weeklySummaryDesc")}
               </p>
             </div>
             <button
@@ -607,7 +615,7 @@ export default function Dashboard() {
               disabled={summaryLoading}
               className="bg-primary text-primary-foreground text-xs font-medium rounded-md px-3 py-1.5 disabled:opacity-50 hover:opacity-90 transition-opacity"
             >
-              {summaryLoading ? "..." : "Generate"}
+              {summaryLoading ? "..." : t("dashboard.generate")}
             </button>
           </div>
           {summaryError && (

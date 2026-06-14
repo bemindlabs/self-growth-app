@@ -1,22 +1,24 @@
 import { useRef, useState, useEffect, useCallback } from "react";
+import { useTranslation } from "react-i18next";
 import { aiApi, type ChatMessage } from "@/api/ai";
 import { chatApi, type ChatConversation } from "@/api/chat";
 import { Send, Bot, User, Trash2, Plus, MessageSquare, PanelLeftClose, PanelLeft, Pencil, Check, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import Markdown from "@/components/ui/Markdown";
 
-const JUMPSTART_PROMPTS = [
-  "Review my week",
-  "Help me plan tomorrow",
-  "What patterns do you see?",
-  "Check my goal progress",
-  "Give me a motivation boost",
-  "Suggest a new habit",
-  "Analyze my journal mood",
-  "How am I doing overall?",
+const JUMPSTART_PROMPT_KEYS = [
+  "reviewMyWeek",
+  "helpPlanTomorrow",
+  "whatPatterns",
+  "checkGoalProgress",
+  "motivationBoost",
+  "suggestHabit",
+  "analyzeJournalMood",
+  "howAmIDoing",
 ] as const;
 
 export default function ChatPage() {
+  const { t } = useTranslation();
   const [conversations, setConversations] = useState<ChatConversation[]>([]);
   const [activeConversationId, setActiveConversationId] = useState<number | null>(null);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
@@ -171,19 +173,19 @@ export default function ChatPage() {
       {sidebarOpen && (
         <div className="w-64 flex-shrink-0 border-r border-border bg-card flex flex-col">
           <div className="flex items-center justify-between px-3 py-3 border-b border-border">
-            <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">History</span>
+            <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">{t("chat.history")}</span>
             <div className="flex items-center gap-1">
               <button
                 onClick={handleNewChat}
                 className="p-1 rounded hover:bg-secondary transition-colors"
-                title="New chat"
+                title={t("chat.newChat")}
               >
                 <Plus size={16} className="text-muted-foreground" />
               </button>
               <button
                 onClick={() => setSidebarOpen(false)}
                 className="p-1 rounded hover:bg-secondary transition-colors"
-                title="Close sidebar"
+                title={t("chat.closeSidebar")}
               >
                 <PanelLeftClose size={16} className="text-muted-foreground" />
               </button>
@@ -192,7 +194,7 @@ export default function ChatPage() {
 
           <div className="flex-1 overflow-y-auto">
             {conversations.length === 0 ? (
-              <p className="text-xs text-muted-foreground text-center py-6">No conversations yet</p>
+              <p className="text-xs text-muted-foreground text-center py-6">{t("chat.noConversations")}</p>
             ) : (
               conversations.map((conv) => (
                 <div
@@ -219,10 +221,10 @@ export default function ChatPage() {
                         className="flex-1 text-xs bg-secondary border border-border rounded px-1.5 py-0.5 focus:outline-none focus:ring-1 focus:ring-primary"
                         autoFocus
                       />
-                      <button onClick={handleConfirmRename} className="p-0.5 hover:text-primary" aria-label="Confirm rename">
+                      <button onClick={handleConfirmRename} className="p-0.5 hover:text-primary" aria-label={t("chat.confirmRename")}>
                         <Check size={12} />
                       </button>
-                      <button onClick={handleCancelRename} className="p-0.5 hover:text-destructive" aria-label="Cancel rename">
+                      <button onClick={handleCancelRename} className="p-0.5 hover:text-destructive" aria-label={t("chat.cancelRename")}>
                         <X size={12} />
                       </button>
                     </div>
@@ -236,7 +238,7 @@ export default function ChatPage() {
                             handleStartRename(conv);
                           }}
                           className="p-0.5 rounded hover:bg-secondary"
-                          title="Rename"
+                          title={t("chat.rename")}
                         >
                           <Pencil size={11} className="text-muted-foreground" />
                         </button>
@@ -246,7 +248,7 @@ export default function ChatPage() {
                             handleDeleteConversation(conv.id);
                           }}
                           className="p-0.5 rounded hover:bg-destructive/10"
-                          title="Delete"
+                          title={t("chat.delete")}
                         >
                           <Trash2 size={11} className="text-destructive" />
                         </button>
@@ -269,15 +271,15 @@ export default function ChatPage() {
               <button
                 onClick={() => setSidebarOpen(true)}
                 className="p-1 rounded hover:bg-secondary transition-colors mr-1"
-                title="Open sidebar"
+                title={t("chat.openSidebar")}
               >
                 <PanelLeft size={18} className="text-muted-foreground" />
               </button>
             )}
             <Bot size={20} className="text-primary" />
             <div>
-              <h2 className="text-base font-semibold">Chat with AI</h2>
-              <p className="text-[11px] text-muted-foreground">Powered by BemindAI</p>
+              <h2 className="text-base font-semibold">{t("chat.title")}</h2>
+              <p className="text-[11px] text-muted-foreground">{t("chat.poweredBy")}</p>
             </div>
           </div>
           {messages.length > 0 && (
@@ -286,7 +288,7 @@ export default function ChatPage() {
               className="flex items-center gap-1 text-xs text-muted-foreground hover:text-destructive transition-colors"
             >
               <Trash2 size={14} />
-              Clear
+              {t("chat.clear")}
             </button>
           )}
         </div>
@@ -296,23 +298,26 @@ export default function ChatPage() {
           {messages.length === 0 && !loading && (
             <div className="flex flex-col items-center justify-center h-full text-center text-muted-foreground">
               <Bot size={48} className="mb-4 opacity-20" />
-              <p className="text-sm font-medium">Start a conversation</p>
+              <p className="text-sm font-medium">{t("chat.startConversation")}</p>
               <p className="text-xs mt-1 max-w-xs">
-                Ask about your routines, skills, learning goals, or get personalized development advice.
+                {t("chat.startConversationHint")}
               </p>
               <div
                 className="mt-5 flex gap-2 overflow-x-auto pb-1 max-w-sm w-full justify-center flex-wrap"
-                aria-label="Jumpstart prompts"
+                aria-label={t("chat.jumpstartPrompts")}
               >
-                {JUMPSTART_PROMPTS.map((prompt) => (
-                  <button
-                    key={prompt}
-                    onClick={() => handleJumpstart(prompt)}
-                    className="flex-shrink-0 text-xs px-3 py-1.5 rounded-full bg-secondary border border-border text-muted-foreground hover:bg-primary/10 hover:text-primary hover:border-primary/30 transition-colors whitespace-nowrap"
-                  >
-                    {prompt}
-                  </button>
-                ))}
+                {JUMPSTART_PROMPT_KEYS.map((key) => {
+                  const prompt = t(`chat.jumpstart.${key}`);
+                  return (
+                    <button
+                      key={key}
+                      onClick={() => handleJumpstart(prompt)}
+                      className="flex-shrink-0 text-xs px-3 py-1.5 rounded-full bg-secondary border border-border text-muted-foreground hover:bg-primary/10 hover:text-primary hover:border-primary/30 transition-colors whitespace-nowrap"
+                    >
+                      {prompt}
+                    </button>
+                  );
+                })}
               </div>
             </div>
           )}
@@ -379,7 +384,7 @@ export default function ChatPage() {
               value={input}
               onChange={(e) => setInput(e.target.value)}
               onKeyDown={(e) => e.key === "Enter" && !e.shiftKey && handleSend()}
-              placeholder="Type a message..."
+              placeholder={t("chat.inputPlaceholder")}
               disabled={loading}
               className="flex-1 bg-secondary text-sm rounded-md border border-border px-3 py-2.5 placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary disabled:opacity-50"
             />
@@ -387,7 +392,7 @@ export default function ChatPage() {
               onClick={handleSend}
               disabled={loading || !input.trim()}
               className="bg-primary text-primary-foreground rounded-md px-3 py-2.5 disabled:opacity-50 hover:opacity-90 transition-opacity"
-              aria-label="Send message"
+              aria-label={t("chat.sendMessage")}
             >
               <Send size={16} />
             </button>

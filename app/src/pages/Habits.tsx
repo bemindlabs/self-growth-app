@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { habitsApi, type Habit } from "@/api/habits";
 import { Plus, Trash2, CheckSquare } from "lucide-react";
 
@@ -18,6 +19,7 @@ function getDayLabel(dateStr: string): string {
 }
 
 export default function Habits() {
+  const { t } = useTranslation();
   const [habits, setHabits] = useState<Habit[]>([]);
   const [logs, setLogs] = useState<Record<number, Set<string>>>({});
   const [showForm, setShowForm] = useState(false);
@@ -95,13 +97,13 @@ export default function Habits() {
   return (
     <div>
       <div className="flex items-center justify-between mb-4">
-        <h2 className="text-2xl font-bold">Habits</h2>
+        <h2 className="text-2xl font-bold">{t("habits.title")}</h2>
         <button
           onClick={() => setShowForm(!showForm)}
           className="flex items-center gap-1 px-3 py-2 bg-primary text-primary-foreground rounded-md text-sm hover:opacity-90"
         >
           <Plus size={16} />
-          Add Habit
+          {t("habits.addHabit")}
         </button>
       </div>
 
@@ -109,13 +111,13 @@ export default function Habits() {
         <div className="bg-card border border-border rounded-lg p-4 mb-4 space-y-3">
           <input
             type="text"
-            placeholder="Habit name"
+            placeholder={t("habits.namePlaceholder")}
             value={name}
             onChange={(e) => setName(e.target.value)}
             className="w-full px-3 py-2 border border-border rounded-md text-sm bg-background"
           />
           <textarea
-            placeholder="Description (optional)"
+            placeholder={t("habits.descriptionPlaceholder")}
             value={description}
             onChange={(e) => setDescription(e.target.value)}
             className="w-full px-3 py-2 border border-border rounded-md text-sm bg-background"
@@ -123,17 +125,17 @@ export default function Habits() {
           />
           <input
             type="text"
-            placeholder="I'm becoming someone who... (optional)"
+            placeholder={t("habits.identityPlaceholder")}
             value={identityStatement}
             onChange={(e) => setIdentityStatement(e.target.value)}
             className="w-full px-3 py-2 border border-border rounded-md text-sm bg-background"
           />
           <div className="flex gap-2">
             <button onClick={handleCreate} className="px-4 py-2 bg-primary text-primary-foreground rounded-md text-sm">
-              Create
+              {t("habits.create")}
             </button>
             <button onClick={() => setShowForm(false)} className="px-4 py-2 bg-secondary text-secondary-foreground rounded-md text-sm">
-              Cancel
+              {t("habits.cancel")}
             </button>
           </div>
         </div>
@@ -142,7 +144,7 @@ export default function Habits() {
       {habits.length === 0 ? (
         <div className="text-center py-12 text-muted-foreground">
           <CheckSquare size={48} className="mx-auto mb-4 opacity-20" />
-          <p className="text-sm">Add your first daily habit to start tracking.</p>
+          <p className="text-sm">{t("habits.emptyState")}</p>
         </div>
       ) : (
         <div className="space-y-3">
@@ -165,13 +167,13 @@ export default function Habits() {
                   <div className="flex items-center gap-2">
                     {streak > 0 && (
                       <span className="text-xs bg-warning/10 text-warning px-2 py-0.5 rounded-full">
-                        {streak}d streak
+                        {t("habits.streak", { count: streak })}
                       </span>
                     )}
                     <button
                       onClick={() => handleDelete(habit.id)}
                       className="p-1.5 text-destructive hover:bg-secondary rounded-md transition-colors"
-                      aria-label={`Delete: ${habit.name}`}
+                      aria-label={t("habits.deleteAriaLabel", { name: habit.name })}
                     >
                       <Trash2 size={14} />
                     </button>

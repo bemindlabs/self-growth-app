@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import {
   healthApi,
   type HealthSummary,
@@ -34,16 +35,16 @@ import {
 
 const metricConfig: Record<
   string,
-  { label: string; icon: typeof Heart; color: string }
+  { labelKey: string; icon: typeof Heart; color: string }
 > = {
-  steps: { label: "Steps", icon: Footprints, color: "#22c55e" },
-  heart_rate: { label: "Heart Rate", icon: Heart, color: "#ef4444" },
-  sleep_minutes: { label: "Sleep", icon: Moon, color: "#8b5cf6" },
-  weight_kg: { label: "Weight", icon: Weight, color: "#3b82f6" },
-  calories_burned: { label: "Calories", icon: Flame, color: "#f97316" },
-  active_minutes: { label: "Active Min", icon: Timer, color: "#14b8a6" },
-  distance_m: { label: "Distance", icon: MapPin, color: "#6366f1" },
-  workout: { label: "Workouts", icon: Dumbbell, color: "#ec4899" },
+  steps: { labelKey: "health.metricSteps", icon: Footprints, color: "#22c55e" },
+  heart_rate: { labelKey: "health.metricHeartRate", icon: Heart, color: "#ef4444" },
+  sleep_minutes: { labelKey: "health.metricSleep", icon: Moon, color: "#8b5cf6" },
+  weight_kg: { labelKey: "health.metricWeight", icon: Weight, color: "#3b82f6" },
+  calories_burned: { labelKey: "health.metricCalories", icon: Flame, color: "#f97316" },
+  active_minutes: { labelKey: "health.metricActiveMin", icon: Timer, color: "#14b8a6" },
+  distance_m: { labelKey: "health.metricDistance", icon: MapPin, color: "#6366f1" },
+  workout: { labelKey: "health.metricWorkouts", icon: Dumbbell, color: "#ec4899" },
 };
 
 const trendIcons: Record<string, typeof TrendingUp> = {
@@ -61,6 +62,7 @@ function formatValue(type: string, value: number): string {
 }
 
 export default function HealthPage() {
+  const { t } = useTranslation();
   const [summaries, setSummaries] = useState<HealthSummary[]>([]);
   const [metrics, setMetrics] = useState<HealthMetric[]>([]);
   const [syncs, setSyncs] = useState<HealthSync[]>([]);
@@ -113,7 +115,7 @@ export default function HealthPage() {
     try {
       // Use Tauri's file dialog if available, otherwise prompt
       let filePath: string | null = null;
-      const path = prompt("Enter path to Apple Health export.xml:");
+      const path = prompt(t("health.promptApplePath"));
       if (path) filePath = path;
 
       if (!filePath) return;
@@ -121,7 +123,7 @@ export default function HealthPage() {
       setImporting(true);
       setError(null);
       const result = await healthApi.importAppleHealth(filePath);
-      alert(`Imported ${result.records_added} health records.`);
+      alert(t("health.importedRecords", { count: result.records_added }));
       await loadData();
       await loadChartData();
     } catch (e) {
@@ -153,7 +155,7 @@ export default function HealthPage() {
       await healthApi.completeGoogleFitAuth(gfitAuthCode.trim());
       setShowGfitAuth(false);
       setGfitAuthCode("");
-      alert("Google Fit connected successfully!");
+      alert(t("health.gfitConnected"));
     } catch (e) {
       setError(String(e));
     }
@@ -164,7 +166,7 @@ export default function HealthPage() {
     setError(null);
     try {
       const result = await healthApi.syncGoogleFit(30);
-      alert(`Synced ${result.records_added} records from Google Fit.`);
+      alert(t("health.syncedRecords", { count: result.records_added }));
       await loadData();
       await loadChartData();
     } catch (e) {
@@ -175,11 +177,11 @@ export default function HealthPage() {
   };
 
   const handleDeleteData = async (source?: string) => {
-    const label = source ?? "all sources";
-    if (!confirm(`Delete all health data from ${label}?`)) return;
+    const label = source ?? t("health.allSources");
+    if (!confirm(t("health.confirmDelete", { label }))) return;
     try {
       const count = await healthApi.deleteData(source);
-      alert(`Deleted ${count} records.`);
+      alert(t("health.deletedRecords", { count }));
       await loadData();
       await loadChartData();
     } catch (e) {
@@ -220,13 +222,13 @@ export default function HealthPage() {
 
   return (
     <div>
-      <h2 className="text-2xl font-bold mb-6">Health</h2>
+      <h2 className="text-2xl font-bold mb-6">{t("health.title")}</h2>
 
       {error && (
         <div className="bg-destructive/10 text-destructive rounded-md p-3 mb-4 text-sm">
           {error}
           <button onClick={() => setError(null)} className="ml-2 underline">
-            dismiss
+            {t("health.dismiss")}
           </button>
         </div>
       )}
@@ -252,7 +254,7 @@ export default function HealthPage() {
                 <div className="flex items-center gap-2 mb-1">
                   <Icon size={14} style={{ color: mc.color }} />
                   <span className="text-xs text-muted-foreground">
-                    {mc.label}
+                    {t(mc.labelKey)}
                   </span>
                   <TrendIcon size={12} className="ml-auto text-muted-foreground" />
                 </div>
@@ -261,7 +263,7 @@ export default function HealthPage() {
                 </p>
                 {s.avg_7d != null && (
                   <p className="text-xs text-muted-foreground">
-                    7d avg: {formatValue(s.metric_type, s.avg_7d)}
+                    {t("health.avg7d", { value: formatValue(s.metric_type, s.avg_7d) })}
                   </p>
                 )}
               </button>
@@ -274,7 +276,7 @@ export default function HealthPage() {
       {aggregatedChart.length > 0 && (
         <div className="bg-card border border-border rounded-lg p-4 mb-6">
           <div className="flex items-center justify-between mb-3">
-            <h3 className="font-medium">{cfg.label} Over Time</h3>
+            <h3 className="font-medium">{t("health.overTime", { metric: t(cfg.labelKey) })}</h3>
             <div className="flex gap-1">
               {[7, 14, 30, 90].map((d) => (
                 <button
@@ -286,7 +288,7 @@ export default function HealthPage() {
                       : "bg-secondary text-secondary-foreground"
                   }`}
                 >
-                  {d}d
+                  {t("health.daysShort", { count: d })}
                 </button>
               ))}
             </div>
@@ -303,9 +305,9 @@ export default function HealthPage() {
               <Tooltip
                 formatter={(value) => [
                   formatValue(selectedMetric, Number(value)),
-                  cfg.label,
+                  t(cfg.labelKey),
                 ]}
-                labelFormatter={(label) => `Date: ${label}`}
+                labelFormatter={(label) => t("health.tooltipDate", { date: label })}
               />
               <Line
                 type="monotone"
@@ -323,10 +325,7 @@ export default function HealthPage() {
       {summaries.length === 0 && !loading && (
         <div className="text-center py-12 text-muted-foreground mb-6">
           <Heart size={48} className="mx-auto mb-4 opacity-20" />
-          <p className="text-sm">
-            No health data yet. Import from Apple Health or connect Google Fit
-            below.
-          </p>
+          <p className="text-sm">{t("health.emptyState")}</p>
         </div>
       )}
 
@@ -334,10 +333,9 @@ export default function HealthPage() {
       <div className="grid md:grid-cols-2 gap-4 mb-6">
         {/* Apple Health */}
         <div className="bg-card border border-border rounded-lg p-4">
-          <h3 className="font-medium mb-1">Apple Health</h3>
+          <h3 className="font-medium mb-1">{t("health.appleHealth")}</h3>
           <p className="text-xs text-muted-foreground mb-3">
-            Import from an Apple Health XML export file (iPhone &rarr; Health
-            app &rarr; Export All Health Data).
+            {t("health.appleHealthDesc")}
           </p>
           <button
             onClick={handleImportAppleHealth}
@@ -345,16 +343,15 @@ export default function HealthPage() {
             className="flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-md text-sm disabled:opacity-50"
           >
             <Upload size={14} />
-            {importing ? "Importing..." : "Import XML Export"}
+            {importing ? t("health.importing") : t("health.importXml")}
           </button>
         </div>
 
         {/* Google Fit */}
         <div className="bg-card border border-border rounded-lg p-4">
-          <h3 className="font-medium mb-1">Google Fit</h3>
+          <h3 className="font-medium mb-1">{t("health.googleFit")}</h3>
           <p className="text-xs text-muted-foreground mb-3">
-            Connect via OAuth to sync fitness data. Configure client credentials
-            in Settings first.
+            {t("health.googleFitDesc")}
           </p>
           <div className="flex gap-2 flex-wrap">
             <button
@@ -362,7 +359,7 @@ export default function HealthPage() {
               className="flex items-center gap-2 px-4 py-2 border border-border rounded-md text-sm hover:bg-secondary"
             >
               <ExternalLink size={14} />
-              Connect
+              {t("health.connect")}
             </button>
             <button
               onClick={handleSyncGoogleFit}
@@ -370,28 +367,28 @@ export default function HealthPage() {
               className="flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-md text-sm disabled:opacity-50"
             >
               <RefreshCw size={14} className={syncing ? "animate-spin" : ""} />
-              {syncing ? "Syncing..." : "Sync"}
+              {syncing ? t("health.syncing") : t("health.sync")}
             </button>
           </div>
 
           {showGfitAuth && (
             <div className="mt-3 space-y-2">
               <p className="text-xs text-muted-foreground">
-                Paste the authorization code from Google:
+                {t("health.pasteAuthCode")}
               </p>
               <div className="flex gap-2">
                 <input
                   type="text"
                   value={gfitAuthCode}
                   onChange={(e) => setGfitAuthCode(e.target.value)}
-                  placeholder="Authorization code"
+                  placeholder={t("health.authCodePlaceholder")}
                   className="flex-1 px-3 py-2 border border-border rounded-md text-sm bg-background"
                 />
                 <button
                   onClick={handleCompleteGfitAuth}
                   className="px-3 py-2 bg-primary text-primary-foreground rounded-md text-sm"
                 >
-                  Submit
+                  {t("health.submit")}
                 </button>
               </div>
             </div>
@@ -402,7 +399,7 @@ export default function HealthPage() {
       {/* Sync History */}
       {syncs.length > 0 && (
         <div className="bg-card border border-border rounded-lg p-4 mb-6">
-          <h3 className="font-medium mb-3">Sync History</h3>
+          <h3 className="font-medium mb-3">{t("health.syncHistory")}</h3>
           <div className="space-y-2">
             {syncs.slice(0, 5).map((s) => (
               <div
@@ -419,7 +416,7 @@ export default function HealthPage() {
                 </div>
                 <div className="flex items-center gap-3">
                   <span className="text-xs text-muted-foreground">
-                    +{s.records_added} records
+                    {t("health.recordsAdded", { count: s.records_added })}
                   </span>
                   <span
                     className={`text-xs px-2 py-0.5 rounded ${
@@ -441,9 +438,9 @@ export default function HealthPage() {
 
       {/* Danger Zone */}
       <div className="bg-card border border-border rounded-lg p-4">
-        <h3 className="font-medium mb-1 text-destructive">Manage Data</h3>
+        <h3 className="font-medium mb-1 text-destructive">{t("health.manageData")}</h3>
         <p className="text-xs text-muted-foreground mb-3">
-          Delete imported health data. This cannot be undone.
+          {t("health.manageDataDesc")}
         </p>
         <div className="flex gap-2 flex-wrap">
           <button
@@ -451,14 +448,14 @@ export default function HealthPage() {
             className="flex items-center gap-1 px-3 py-2 border border-destructive text-destructive rounded-md text-sm"
           >
             <Trash2 size={14} />
-            Delete Apple Health
+            {t("health.deleteAppleHealth")}
           </button>
           <button
             onClick={() => handleDeleteData("google_fit")}
             className="flex items-center gap-1 px-3 py-2 border border-destructive text-destructive rounded-md text-sm"
           >
             <Trash2 size={14} />
-            Delete Google Fit
+            {t("health.deleteGoogleFit")}
           </button>
         </div>
       </div>

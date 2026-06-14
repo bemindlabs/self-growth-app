@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 import { storyApi, type Story } from "@/api/story";
 import { Sparkles, Trash2, Wand2 } from "lucide-react";
@@ -13,6 +14,7 @@ const toneColors: Record<string, string> = {
 };
 
 export default function StoriesPage() {
+  const { t } = useTranslation();
   const [stories, setStories] = useState<Story[]>([]);
   const [expanded, setExpanded] = useState<number | null>(null);
   const navigate = useNavigate();
@@ -47,27 +49,27 @@ export default function StoriesPage() {
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center gap-2">
           <Sparkles className="text-primary" size={22} />
-          <h2 className="text-2xl font-bold">Stories</h2>
+          <h2 className="text-2xl font-bold">{t("stories.title")}</h2>
         </div>
         <button
           onClick={() => navigate("/stories/new")}
           className="flex items-center gap-1 px-3 py-2 bg-primary text-primary-foreground rounded-md text-sm hover:opacity-90 transition-opacity"
         >
           <Wand2 size={16} />
-          Generate Story
+          {t("stories.generateStory")}
         </button>
       </div>
 
       {stories.length === 0 ? (
         <div className="text-center py-12 text-muted-foreground">
           <Sparkles size={48} className="mx-auto mb-4 opacity-20" />
-          <p className="text-sm">No stories yet. Generate your first one!</p>
+          <p className="text-sm">{t("stories.emptyState")}</p>
           <button
             onClick={() => navigate("/stories/new")}
             className="mt-4 inline-flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-md text-sm hover:opacity-90 transition-opacity"
           >
             <Wand2 size={16} />
-            Generate Story
+            {t("stories.generateStory")}
           </button>
         </div>
       ) : (
@@ -105,7 +107,7 @@ export default function StoriesPage() {
                   <button
                     onClick={() => handleDelete(story.id)}
                     className="p-2 text-destructive hover:bg-secondary rounded-md transition-colors flex-shrink-0"
-                    aria-label={`Delete story from ${formatDate(story.created_at)}`}
+                    aria-label={t("stories.deleteStory", { date: formatDate(story.created_at) })}
                   >
                     <Trash2 size={16} />
                   </button>
@@ -117,7 +119,7 @@ export default function StoriesPage() {
                     {story.context_summary && (
                       <div className="bg-secondary/50 rounded-md p-3">
                         <p className="text-xs font-medium text-muted-foreground mb-1">
-                          Context used
+                          {t("stories.contextUsed")}
                         </p>
                         <p className="text-xs text-muted-foreground">{story.context_summary}</p>
                       </div>

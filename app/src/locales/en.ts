@@ -68,14 +68,6 @@ export const en = {
       title: "About",
     },
   },
-  dashboard: {
-    title: "Dashboard",
-    healthSnapshot: "Health Snapshot",
-    wheelOfLife: "Wheel of Life",
-    quickCoach: "Quick Coach",
-    insights: "Insights",
-    weeklySummary: "Weekly Summary",
-  },
 };
 
 export type Translation = typeof en;

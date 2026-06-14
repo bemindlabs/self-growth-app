@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { checkupsApi, type HealthCheckup } from "@/api/checkups";
 import { Plus, Trash2, ClipboardList, ChevronDown, ChevronUp } from "lucide-react";
 import Markdown from "@/components/ui/Markdown";
@@ -6,19 +7,22 @@ import OcrButton from "@/components/ui/OcrButton";
 
 const categories = ["general", "blood_test", "physical", "dental", "vision", "mental_health", "specialist", "vaccination", "other"];
 
-const categoryLabels: Record<string, string> = {
-  general: "General",
-  blood_test: "Blood Test",
-  physical: "Physical Exam",
-  dental: "Dental",
-  vision: "Vision",
-  mental_health: "Mental Health",
-  specialist: "Specialist",
-  vaccination: "Vaccination",
-  other: "Other",
+const categoryLabelKeys: Record<string, string> = {
+  general: "checkups.categoryGeneral",
+  blood_test: "checkups.categoryBloodTest",
+  physical: "checkups.categoryPhysical",
+  dental: "checkups.categoryDental",
+  vision: "checkups.categoryVision",
+  mental_health: "checkups.categoryMentalHealth",
+  specialist: "checkups.categorySpecialist",
+  vaccination: "checkups.categoryVaccination",
+  other: "checkups.categoryOther",
 };
 
 export default function Checkups() {
+  const { t } = useTranslation();
+  const catLabel = (c: string) =>
+    categoryLabelKeys[c] ? t(categoryLabelKeys[c]) : c;
   const [checkups, setCheckups] = useState<HealthCheckup[]>([]);
   const [showForm, setShowForm] = useState(false);
   const [expanded, setExpanded] = useState<number | null>(null);
@@ -66,13 +70,13 @@ export default function Checkups() {
   return (
     <div>
       <div className="flex items-center justify-between mb-4">
-        <h2 className="text-2xl font-bold">Health Checkups</h2>
+        <h2 className="text-2xl font-bold">{t("checkups.title")}</h2>
         <button
           onClick={() => setShowForm(!showForm)}
           className="flex items-center gap-1 px-3 py-2 bg-primary text-primary-foreground rounded-md text-sm hover:opacity-90"
         >
           <Plus size={16} />
-          Add Result
+          {t("checkups.addResult")}
         </button>
       </div>
 
@@ -83,7 +87,7 @@ export default function Checkups() {
             !filter ? "bg-primary text-primary-foreground" : "bg-secondary text-secondary-foreground"
           }`}
         >
-          All
+          {t("checkups.filterAll")}
         </button>
         {categories.map((c) => (
           <button
@@ -93,7 +97,7 @@ export default function Checkups() {
               filter === c ? "bg-primary text-primary-foreground" : "bg-secondary text-secondary-foreground"
             }`}
           >
-            {categoryLabels[c] || c}
+            {catLabel(c)}
           </button>
         ))}
       </div>
@@ -103,7 +107,7 @@ export default function Checkups() {
           <div className="grid grid-cols-2 gap-3">
             <input
               type="text"
-              placeholder="Title (e.g. Annual Blood Test)"
+              placeholder={t("checkups.titlePlaceholder")}
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               className="col-span-2 px-3 py-2 border border-border rounded-md text-sm bg-background"
@@ -120,12 +124,12 @@ export default function Checkups() {
               className="px-3 py-2 border border-border rounded-md text-sm bg-background"
             >
               {categories.map((c) => (
-                <option key={c} value={c}>{categoryLabels[c] || c}</option>
+                <option key={c} value={c}>{catLabel(c)}</option>
               ))}
             </select>
             <input
               type="text"
-              placeholder="Provider / Clinic (optional)"
+              placeholder={t("checkups.providerPlaceholder")}
               value={provider}
               onChange={(e) => setProvider(e.target.value)}
               className="col-span-2 px-3 py-2 border border-border rounded-md text-sm bg-background"
@@ -133,15 +137,15 @@ export default function Checkups() {
           </div>
           <div>
             <div className="flex items-center justify-between mb-1">
-              <label className="text-xs text-muted-foreground">Results (supports markdown)</label>
+              <label className="text-xs text-muted-foreground">{t("checkups.resultsLabel")}</label>
               <OcrButton
                 mode="lab"
-                label="Scan Lab Results"
+                label={t("checkups.scanLabResults")}
                 onResult={(text) => setResults((prev) => prev ? prev + "\n\n" + text : text)}
               />
             </div>
             <textarea
-              placeholder="e.g.&#10;- Cholesterol: 180 mg/dL (normal)&#10;- Blood sugar: 95 mg/dL (normal)&#10;- Blood pressure: 120/80"
+              placeholder={t("checkups.resultsPlaceholder")}
               value={results}
               onChange={(e) => setResults(e.target.value)}
               className="w-full px-3 py-2 border border-border rounded-md text-sm bg-background"
@@ -149,7 +153,7 @@ export default function Checkups() {
             />
           </div>
           <textarea
-            placeholder="Notes (optional)"
+            placeholder={t("checkups.notesPlaceholder")}
             value={notes}
             onChange={(e) => setNotes(e.target.value)}
             className="w-full px-3 py-2 border border-border rounded-md text-sm bg-background"
@@ -157,10 +161,10 @@ export default function Checkups() {
           />
           <div className="flex gap-2">
             <button onClick={handleCreate} className="px-4 py-2 bg-primary text-primary-foreground rounded-md text-sm">
-              Save
+              {t("checkups.save")}
             </button>
             <button onClick={() => setShowForm(false)} className="px-4 py-2 bg-secondary text-secondary-foreground rounded-md text-sm">
-              Cancel
+              {t("checkups.cancel")}
             </button>
           </div>
         </div>
@@ -169,7 +173,7 @@ export default function Checkups() {
       {checkups.length === 0 ? (
         <div className="text-center py-12 text-muted-foreground">
           <ClipboardList size={48} className="mx-auto mb-4 opacity-20" />
-          <p className="text-sm">No health checkup results yet. Add your first one.</p>
+          <p className="text-sm">{t("checkups.emptyState")}</p>
         </div>
       ) : (
         <div className="space-y-3">
@@ -186,13 +190,13 @@ export default function Checkups() {
                       <div className="flex items-center gap-2">
                         <h3 className="font-medium">{checkup.title}</h3>
                         <span className="text-[10px] px-1.5 py-0.5 rounded bg-secondary text-secondary-foreground">
-                          {categoryLabels[checkup.category] || checkup.category}
+                          {catLabel(checkup.category)}
                         </span>
                       </div>
                       <div className="flex items-center gap-2 mt-1">
                         <span className="text-xs text-muted-foreground">{checkup.checkup_date}</span>
                         {checkup.provider && (
-                          <span className="text-xs text-muted-foreground">at {checkup.provider}</span>
+                          <span className="text-xs text-muted-foreground">{t("checkups.atProvider", { provider: checkup.provider })}</span>
                         )}
                       </div>
                       {!isExpanded && (
@@ -211,12 +215,12 @@ export default function Checkups() {
                 {isExpanded && (
                   <div className="mt-3 pt-3 border-t border-border space-y-3">
                     <div>
-                      <h4 className="text-xs font-medium text-muted-foreground mb-1">Results</h4>
+                      <h4 className="text-xs font-medium text-muted-foreground mb-1">{t("checkups.resultsHeading")}</h4>
                       <Markdown className="text-sm">{checkup.results}</Markdown>
                     </div>
                     {checkup.notes && (
                       <div>
-                        <h4 className="text-xs font-medium text-muted-foreground mb-1">Notes</h4>
+                        <h4 className="text-xs font-medium text-muted-foreground mb-1">{t("checkups.notesHeading")}</h4>
                         <Markdown className="text-sm">{checkup.notes}</Markdown>
                       </div>
                     )}

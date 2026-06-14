@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { storyApi, type StoryGenerationResult } from "@/api/story";
 import { Sparkles, Wand2 } from "lucide-react";
 import Markdown from "@/components/ui/Markdown";
@@ -6,8 +7,9 @@ import Markdown from "@/components/ui/Markdown";
 const toneOptions = ["encouraging", "reflective", "cinematic", "playful", "calm"];
 
 export default function StoryPage() {
-  const [prompt, setPrompt] = useState(
-    "Write a short story about becoming a little better each day."
+  const { t } = useTranslation();
+  const [prompt, setPrompt] = useState(() =>
+    t("story.defaultPrompt")
   );
   const [tone, setTone] = useState("encouraging");
   const [loading, setLoading] = useState(false);
@@ -32,23 +34,23 @@ export default function StoryPage() {
     <div>
       <div className="flex items-center gap-2 mb-6">
         <Sparkles className="text-primary" size={22} />
-        <h2 className="text-2xl font-bold">Story Lab</h2>
+        <h2 className="text-2xl font-bold">{t("story.title")}</h2>
       </div>
 
       <div className="bg-card border border-border rounded-lg p-4 space-y-4">
         <div>
-          <label className="block text-sm font-medium mb-2">Story prompt</label>
+          <label className="block text-sm font-medium mb-2">{t("story.promptLabel")}</label>
           <textarea
             value={prompt}
             onChange={(e) => setPrompt(e.target.value)}
             rows={4}
             className="w-full px-3 py-2 border border-border rounded-md text-sm bg-background"
-            placeholder="Describe the kind of story you want..."
+            placeholder={t("story.promptPlaceholder")}
           />
         </div>
 
         <div>
-          <label className="block text-sm font-medium mb-2">Tone</label>
+          <label className="block text-sm font-medium mb-2">{t("story.toneLabel")}</label>
           <div className="flex gap-2 flex-wrap">
             {toneOptions.map((option) => (
               <button
@@ -72,11 +74,11 @@ export default function StoryPage() {
           className="inline-flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-md text-sm disabled:opacity-50"
         >
           <Wand2 size={16} />
-          {loading ? "Generating..." : "Generate story"}
+          {loading ? t("story.generating") : t("story.generateButton")}
         </button>
 
         <p className="text-xs text-muted-foreground">
-          Uses your tracked skills, learning items, routines, and goals as context.
+          {t("story.contextHint")}
         </p>
       </div>
 
@@ -90,7 +92,7 @@ export default function StoryPage() {
         <div className="mt-6 space-y-4">
           <div className="bg-card border border-border rounded-lg p-4">
             <div className="flex items-center justify-between gap-3 mb-3">
-              <h3 className="font-semibold">Generated story</h3>
+              <h3 className="font-semibold">{t("story.generatedStory")}</h3>
               <span className="text-xs text-muted-foreground">
                 {result.provider} · {result.model}
               </span>
@@ -99,7 +101,7 @@ export default function StoryPage() {
           </div>
 
           <div className="bg-card border border-border rounded-lg p-4">
-            <h3 className="font-semibold mb-3">Context used</h3>
+            <h3 className="font-semibold mb-3">{t("story.contextUsed")}</h3>
             <ul className="space-y-2 text-sm text-muted-foreground list-disc pl-5">
               {result.context_summary.map((item, index) => (
                 <li key={`${item}-${index}`}>{item}</li>
