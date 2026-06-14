@@ -15,10 +15,10 @@
             buildForAnalyzing = "YES">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "C69EB6CE4726EF6A1781D96B"
-               BuildableName = "bemind-growth_iOS.app"
-               BlueprintName = "bemind-growth_iOS"
-               ReferencedContainer = "container:bemind-growth.xcodeproj">
+               BlueprintIdentifier = "0E1792E0E2DA49E9F25CABBF"
+               BuildableName = "self-growth_iOS.app"
+               BlueprintName = "self-growth_iOS"
+               ReferencedContainer = "container:self-growth.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
       </BuildActionEntries>
@@ -32,10 +32,10 @@
       <MacroExpansion>
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "C69EB6CE4726EF6A1781D96B"
-            BuildableName = "bemind-growth_iOS.app"
-            BlueprintName = "bemind-growth_iOS"
-            ReferencedContainer = "container:bemind-growth.xcodeproj">
+            BlueprintIdentifier = "0E1792E0E2DA49E9F25CABBF"
+            BuildableName = "self-growth_iOS.app"
+            BlueprintName = "self-growth_iOS"
+            ReferencedContainer = "container:self-growth.xcodeproj">
          </BuildableReference>
       </MacroExpansion>
       <Testables>
@@ -69,10 +69,10 @@
          runnableDebuggingMode = "0">
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "C69EB6CE4726EF6A1781D96B"
-            BuildableName = "bemind-growth_iOS.app"
-            BlueprintName = "bemind-growth_iOS"
-            ReferencedContainer = "container:bemind-growth.xcodeproj">
+            BlueprintIdentifier = "0E1792E0E2DA49E9F25CABBF"
+            BuildableName = "self-growth_iOS.app"
+            BlueprintName = "self-growth_iOS"
+            ReferencedContainer = "container:self-growth.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
       <CommandLineArguments>
@@ -100,10 +100,10 @@
          runnableDebuggingMode = "0">
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "C69EB6CE4726EF6A1781D96B"
-            BuildableName = "bemind-growth_iOS.app"
-            BlueprintName = "bemind-growth_iOS"
-            ReferencedContainer = "container:bemind-growth.xcodeproj">
+            BlueprintIdentifier = "0E1792E0E2DA49E9F25CABBF"
+            BuildableName = "self-growth_iOS.app"
+            BlueprintName = "self-growth_iOS"
+            ReferencedContainer = "container:self-growth.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
       <CommandLineArguments>

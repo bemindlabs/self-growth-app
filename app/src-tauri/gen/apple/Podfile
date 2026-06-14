@@ -1,13 +1,13 @@
 # Uncomment the next line to define a global platform for your project
 
-target 'bemind-growth_iOS' do
+target 'self-growth_iOS' do
 platform :ios, '14.0'
-  # Pods for bemind-growth_iOS
+  # Pods for self-growth_iOS
 end
 
-target 'bemind-growth_macOS' do
+target 'self-growth_macOS' do
 platform :osx, '11.0'
-  # Pods for bemind-growth_macOS
+  # Pods for self-growth_macOS
 end
 
 # Delete the deployment target for iOS and macOS, causing it to be inherited from the Podfile
